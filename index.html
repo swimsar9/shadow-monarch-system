@@ -18,6 +18,7 @@
       <nav id="side-nav" aria-label="Sections">
         <button class="nav-btn active" data-view="dashboard">◈ <span>Command Center</span></button>
         <button class="nav-btn" data-view="quests">☷ <span>Daily Quests</span></button>
+        <button class="nav-btn" data-view="stats">▥ <span>Hunter Analytics</span></button>
         <button class="nav-btn" data-view="training">⌁ <span>Training Arc</span></button>
         <button class="nav-btn" data-view="achievements">✧ <span>Achievements</span></button>
         <button class="nav-btn" data-view="history">▤ <span>Hunter Log</span></button>
@@ -27,7 +28,7 @@
     </aside>
     <div class="main-shell">
       <header class="topbar">
-        <div><span class="eyebrow">PLAYER INTERFACE / V1.0</span><h1 id="top-title">COMMAND CENTER</h1></div>
+        <div><span class="eyebrow">PLAYER INTERFACE / V3.0</span><h1 id="top-title">COMMAND CENTER</h1></div>
         <div class="status"><span class="status-orb"></span> SYSTEM READY <button class="button small outline" id="today-btn">Today's quests ↗</button></div>
       </header>
       <main id="app" tabindex="-1"></main>
@@ -37,6 +38,7 @@
   <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation">
     <button data-view="dashboard">◈<small>Home</small></button>
     <button data-view="quests">☷<small>Quests</small></button>
+    <button data-view="stats">▥<small>Stats</small></button>
     <button data-view="training">⌁<small>Train</small></button>
     <button data-view="achievements">✧<small>Badges</small></button>
     <button data-view="settings">⚙<small>More</small></button>
@@ -44,6 +46,7 @@
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
   <input id="import-file" type="file" accept=".json,application/json" hidden>
   <script src="data.js"></script>
-  <script src="app.js"></script>
+  <script src="stats.js?v=3"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>
