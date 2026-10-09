@@ -13,7 +13,8 @@ const n=v=>Math.max(0,Number(v)||0), num=v=>Math.round(n(v)), format=v=>num(v).t
 const day=d=>new Date(d+'T12:00:00').toLocaleDateString('en-US',{weekday:'long'});
 const pretty=d=>new Date(d+'T12:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
 const dateShift=(d,days)=>{let x=new Date(d+'T12:00:00');x.setDate(x.getDate()+days);return [x.getFullYear(),String(x.getMonth()+1).padStart(2,'0'),String(x.getDate()).padStart(2,'0')].join('-')};
-const currentWeek=d=>Math.floor((new Date(d+'T12:00:00')-new Date(START+'T12:00:00'))/(7*86400000))+13;
+const dayNumber=d=>{const [y,m,k]=d.split('-').map(Number);return Date.UTC(y,m-1,k)/86400000};
+const currentWeek=d=>Math.floor((dayNumber(d)-dayNumber(START))/7)+13;
 const get=d=>state.entries[d]||{};
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({entries:state.entries,bonuses:state.bonuses,rank:state.rank,targets:state.targets}))}catch{notify('Storage unavailable; export a backup')}}; 
 const notify=msg=>{const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>el.classList.remove('show'),3000)};
@@ -59,10 +60,10 @@ const bestConsecutive=k=>{
  return best;
 };
 const fourGymWeeks=()=>{
- const weeks=new Map(),origin=new Date(START+'T12:00:00').getTime();
+ const weeks=new Map();
  dailyRecords().forEach(x=>{
   if(!flag(x.e,'gym'))return;
-  const w=Math.floor((new Date(x.date+'T12:00:00').getTime()-origin)/604800000);
+  const w=Math.floor((dayNumber(x.date)-dayNumber(START))/7);
   weeks.set(w,(weeks.get(w)||0)+1);
  });
  return [...weeks.keys()].some(w=>[0,1,2,3].every(i=>(weeks.get(w+i)||0)>=4));
