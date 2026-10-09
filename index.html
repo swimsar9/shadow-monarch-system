@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b0d1b">
+  <meta name="description" content="THE SYSTEM · Shadow Monarch Edition — private-on-device gamified hunter tracker.">
+  <title>THE SYSTEM · Shadow Monarch</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="aurora" aria-hidden="true"></div>
+  <div class="shell">
+    <aside class="sidebar" aria-label="Primary navigation">
+      <div class="brand"><div class="sigil">✦</div><div><strong>THE SYSTEM</strong><small>SHADOW MONARCH EDITION</small></div></div>
+      <p class="side-label">HUNTER CONSOLE</p>
+      <nav id="side-nav" aria-label="Sections">
+        <button class="nav-btn active" data-view="dashboard">◈ <span>Command Center</span></button>
+        <button class="nav-btn" data-view="quests">☷ <span>Daily Quests</span></button>
+        <button class="nav-btn" data-view="training">⌁ <span>Training Arc</span></button>
+        <button class="nav-btn" data-view="achievements">✧ <span>Achievements</span></button>
+        <button class="nav-btn" data-view="history">▤ <span>Hunter Log</span></button>
+        <button class="nav-btn" data-view="settings">⚙ <span>Settings & Backup</span></button>
+      </nav>
+      <div class="sidebar-foot"><span class="star">✦</span><p>Progress is power.<br>Recovery is progression.</p><b>ARISE.</b></div>
+    </aside>
+    <div class="main-shell">
+      <header class="topbar">
+        <div><span class="eyebrow">PLAYER INTERFACE / V1.0</span><h1 id="top-title">COMMAND CENTER</h1></div>
+        <div class="status"><span class="status-orb"></span> SYSTEM READY <button class="button small outline" id="today-btn">Today's quests ↗</button></div>
+      </header>
+      <main id="app" tabindex="-1"></main>
+      <footer>THE SYSTEM · NO NEGATIVE XP · SAVE YOUR PROGRESS <span>LOCAL BROWSER STORAGE · BACK UP OFTEN</span></footer>
+    </div>
+  </div>
+  <nav id="mobile-nav" class="mobile-nav" aria-label="Mobile navigation">
+    <button data-view="dashboard">◈<small>Home</small></button>
+    <button data-view="quests">☷<small>Quests</small></button>
+    <button data-view="training">⌁<small>Train</small></button>
+    <button data-view="achievements">✧<small>Badges</small></button>
+    <button data-view="settings">⚙<small>More</small></button>
+  </nav>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <input id="import-file" type="file" accept=".json,application/json" hidden>
+  <script src="data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
