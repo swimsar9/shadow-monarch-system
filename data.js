@@ -43,7 +43,7 @@ window.SYSTEM_DATA = {
     ['Quiz Comeback','Passed quizzes after the first','✨','historical'],
     ['One Punch Disciple','Complete a 100/100/100 Saitama day','🥊','saitama'],
     ['Distance Breaker','Complete the first 15K','⛰','distance'],
-    ['Iron Will','Keep consistent with strength training','💪','gym'],
+    ['Iron Will','Complete 4 consecutive weeks with 4 gym sessions each','💪','gym'],
     ['Anki Streak','Complete Anki seven days in a row','📚','anki'],
     ['Recovery Master','Log 7 recovery overrides when needed','🌙','recovery'],
     ['Study Sentinel','Complete Anki on 30 logged days','📖','study30'],
