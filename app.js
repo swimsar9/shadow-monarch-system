@@ -48,6 +48,54 @@ const stat=(name,value,detail,cls='')=>'<article class="card"><div class="stat-l
 const bar=(a,b)=>'<div class="bar"><div style="width:'+Math.min(100,100*a/(b||1)).toFixed(2)+'%"></div></div>';
 const button=(text,action,other='')=>'<button class="button '+other+'" data-action="'+action+'">'+escape(text)+'</button>';
 const sum=(key)=>dailyRecords().filter(({e})=>!!e[key]).length;
+
+const allQuestDays=()=>dailyRecords().filter(x=>x.xp>0).length;
+const countFlag=k=>dailyRecords().filter(x=>flag(x.e,k)).length;
+const totalKm=()=>dailyRecords().reduce((v,x)=>v+count(x.e,'runKm'),0);
+const bestConsecutive=k=>{
+ const dates=dailyRecords().filter(x=>flag(x.e,k)).map(x=>x.date).sort();
+ let best=0,run=0,prev='';
+ for(const d of dates){run=prev&&dateShift(prev,1)===d?run+1:1;best=Math.max(best,run);prev=d}
+ return best;
+};
+const fourGymWeeks=()=>{
+ const weeks=new Map(),origin=new Date(START+'T12:00:00').getTime();
+ dailyRecords().forEach(x=>{
+  if(!flag(x.e,'gym'))return;
+  const w=Math.floor((new Date(x.date+'T12:00:00').getTime()-origin)/604800000);
+  weeks.set(w,(weeks.get(w)||0)+1);
+ });
+ return [...weeks.keys()].some(w=>[0,1,2,3].every(i=>(weeks.get(w+i)||0)>=4));
+};
+const achieved=kind=>{
+ switch(kind){
+  case 'historical':return true;
+  case 'saitama':return dailyRecords().some(x=>['pushups','situps','burpees'].every(k=>count(x.e,k)>=100));
+  case 'distance':return state.bonuses.some(x=>x.id==='first15k');
+  case 'gym':return fourGymWeeks();
+  case 'anki':return bestConsecutive('anki')>=7;
+  case 'recovery':return countFlag('recovery')>=7;
+  case 'study30':return countFlag('anki')>=30;
+  case 'study100':return countFlag('anki')>=100;
+  case 'quiz10':return countFlag('quiz')>=10;
+  case 'module3':return countFlag('module')>=3;
+  case 'gym25':return countFlag('gym')>=25;
+  case 'gym100':return countFlag('gym')>=100;
+  case 'runner10':return countFlag('run')>=10;
+  case 'runner50':return countFlag('run')>=50;
+  case 'run100km':return totalKm()>=100;
+  case 'run500km':return totalKm()>=500;
+  case 'steps10':return dailyRecords().filter(x=>count(x.e,'steps')>=10000).length>=10;
+  case 'mobility30':return countFlag('mobility')>=30;
+  case 'mobility100':return countFlag('mobility')>=100;
+  case 'bjj10':return countFlag('bjj')>=10;
+  case 'quests30':return allQuestDays()>=30;
+  case 'quests100':return allQuestDays()>=100;
+  case 'quests365':return allQuestDays()>=365;
+  default:return false;
+ }
+};
+
 const questsHtml=()=>{const e=get(selected),weekday=day(selected),schedule=(DATA.schedule||{})[weekday]||'';
  const check=(label,k,xp,desc='')=>'<div class="quest '+(flag(e,k)?'done':'')+'"><label><input type="checkbox" data-field="'+k+'" '+(flag(e,k)?'checked':'')+'><span><strong>'+escape(label)+'</strong><small>'+escape(desc)+'</small></span></label><span class="xp-pill">+'+xp+' XP</span></div>';
  const field=(label,k,placeholder='',step=1)=>'<label class="field"><span>'+escape(label)+'</span><input type="number" min="0" step="'+step+'" data-field="'+k+'" placeholder="'+escape(placeholder)+'" value="'+(e[k]??'')+'"></label>';
@@ -67,7 +115,13 @@ const dashboard=()=>{const t=total(),l=lvFor(t),e=get(selected),recent=dailyReco
  '<section class="card"><h2>Recent Hunter Reports</h2>'+(recent.length?'<div class="scroll"><table class="data-table"><thead><tr><th>Date</th><th>Focus</th><th>XP</th></tr></thead><tbody>'+recent.map(x=>'<tr><td>'+escape(pretty(x.date))+'</td><td>'+escape(DATA.schedule?.[day(x.date)]||'')+'</td><td><span class="xp-pill">+'+x.xp+'</span></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No official XP logged yet. Start with your first quest board!</div>')+'</section></div>';
 };
 const training=()=>{const g=DATA.gym||{},r=DATA.running||[];return '<div class="stack"><div class="note"><strong>ROAD TO 15K:</strong> Runs Tuesday (quality), Thursday (easy) and Saturday (long). Recovery weeks are built in. Reduce Friday leg volume before long runs if needed.</div><section class="card"><h2>11-Week Running Plan</h2><div class="scroll"><table class="data-table"><thead><tr><th>Med Week</th><th>Starts</th><th>Tuesday</th><th>Thursday</th><th>Saturday</th><th>Notes</th></tr></thead><tbody>'+r.map(x=>'<tr class="week-row '+(/recovery/i.test(x[5]||'')?'recovery':'')+'"><td class="week-label">'+x[0]+'</td><td>'+escape(x[1])+'</td><td>'+escape(x[2])+'</td><td>'+escape(x[3])+'</td><td><strong>'+escape(x[4])+'</strong></td><td>'+escape(x[5]||'')+'</td></tr>').join('')+'</tbody></table></div><p class="hint">Intervals include warm-up, jog recoveries and cooldown. Keep easy runs conversational. 15K goal is flexible.</p></section><section class="card"><h2>Gym Program</h2><div class="day-tabs">'+Object.keys(g).map(d=>'<button data-day="'+d+'" class="'+(activeDay===d?'active':'')+'">'+d+'</button>').join('')+'</div><h3>'+escape(activeDay)+' · '+escape(DATA.schedule?.[activeDay]||'')+'</h3><div class="divider"></div><div class="small-list">'+(g[activeDay]||[]).map(([exercise,sets])=>'<div class="small-item"><span>'+escape(exercise)+'</span><span class="muted">'+escape(sets)+'</span></div>').join('')+'</div><p class="hint" style="margin-top:15px">Warm up and stretch appropriately; training can be modified for fatigue, exams or injury.</p></section></div>'};
-const achievements=()=>{const records=dailyRecords(),full=records.some(({e})=>n(e.pushups)>=100&&n(e.situps)>=100&&n(e.burpees)>=100),a=DATA.achievements||[];return '<div class="stack"><div class="note"><strong>Historical victories:</strong> Previously earned achievements are unlocked without retroactive XP. New bosses are tracked after activation.</div><div class="badge-list">'+a.map(([name,description,emoji,kind])=>{const yes=kind==='historical'||(kind==='saitama'&&full)||(kind==='distance'&&state.bonuses.some(b=>b.id==='first15k'));return '<article class="achievement '+(yes?'unlocked':'')+'"><div class="medal">'+escape(emoji)+'</div><h3>'+escape(name)+'</h3><p>'+escape(description)+'</p><span class="tag '+(yes?'goldtag':'')+'">'+(yes?'✦ UNLOCKED':'LOCKED')+'</span></article>'}).join('')+'</div><section class="card"><h2>15K Boss Battle</h2><p class="muted">First completion awards 200 XP once. Only claim it after completing 15K.</p><div class="actions" style="margin-top:12px">'+button(state.bonuses.some(b=>b.id==='first15k')?'15K Boss Defeated ✓':'Claim first 15K (+200 XP)','claim15k','small '+(state.bonuses.some(b=>b.id==='first15k')?'outline':''))+'</div></section></div>'};
+const achievements=()=>{
+ const a=DATA.achievements||[], unlocked=a.filter(x=>achieved(x[3])).length;
+ return '<div class="stack"><section class="card"><div class="today-top"><div><span class="kicker">LIFETIME ACHIEVEMENTS · ALL SEASONS</span><h2>'+unlocked+' / '+a.length+' badges unlocked</h2></div><span class="tag goldtag">♾ THE ENDLESS ASCENT</span></div>'+bar(unlocked,a.length)+'<p class="hint">Achievements are earned from your existing quest logs, including in future years. Historical awards stay unlocked. New badges do not add XP, so nothing gets double-counted.</p></section><div class="badge-list">'+a.map(([name,description,emoji,kind])=>{
+  const yes=achieved(kind);
+  return '<article class="achievement '+(yes?'unlocked':'')+'"><div class="medal">'+escape(emoji)+'</div><h3>'+escape(name)+'</h3><p>'+escape(description)+'</p><span class="tag '+(yes?'goldtag':'')+'">'+(yes?'✦ UNLOCKED':'LOCKED')+'</span></article>'
+ }).join('')+'</div><section class="card"><h2>15K Boss Battle · Chapter One</h2><p class="muted">The first 15K earns +200 XP once. After this milestone, the System continues into the Endless Ascent; your XP, badges and quest history never reset.</p><div class="actions" style="margin-top:12px">'+button(state.bonuses.some(b=>b.id==='first15k')?'15K Boss Defeated ✓':'Claim first 15K (+200 XP)','claim15k','small '+(state.bonuses.some(b=>b.id==='first15k')?'outline':''))+'</div></section></div>';
+};
 const history=()=>{const entries=dailyRecords().filter(x=>x.xp>0);return '<div class="stack"><div class="grid three">'+stat('Lifetime XP',format(total()),'All quest and boss awards')+stat('Logged Quest Days',entries.length,'Days with XP','purple')+stat('Boss Bonus XP',state.bonuses.reduce((a,b)=>a+n(b.xp),0),'One-time victories','gold')+'</div><section class="card"><h2>Daily XP History</h2>'+(entries.length?'<div class="scroll"><table class="data-table"><thead><tr><th>Date</th><th>XP</th><th>Notes</th><th></th></tr></thead><tbody>'+entries.map(x=>'<tr><td>'+escape(pretty(x.date))+'</td><td><span class="xp-pill">+'+x.xp+'</span></td><td>'+escape(x.e.notes||'')+'</td><td><button class="button small outline" data-go-date="'+x.date+'">View</button></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No completed quests recorded yet.</div>')+'</section></div>'};
 const settings=()=>'<div class="stack"><div class="note"><strong>Privacy:</strong> Your quest data is kept in this browser only. GitHub Pages hosts the code, not your personal data. Other browsers/devices do not automatically share progress. Export backups regularly.</div><section class="card"><h2>Hunter Settings</h2><div class="fields three">'+[['Calories','calories'],['Protein (g)','protein'],['Carbohydrates (g)','carbs'],['Fat (g)','fat'],['Steps','steps']].map(([label,k])=>'<label class="field"><span>'+label+'</span><input type="number" min="0" data-target="'+k+'" value="'+escape(state.targets[k])+'"></label>').join('')+'<label class="field"><span>Current rank (promotion by review)</span><select id="rank-select">'+['C','B','A','S'].map(k=>'<option '+(k===state.rank?'selected':'')+'>'+k+'</option>').join('')+'</select></label></div><p class="hint" style="margin-top:12px">Nutrition targets are provisional. If your energy, training or recovery suffer, adjust fueling; never chase XP by undereating.</p></section><section class="card"><h2>Backup & Restore</h2><p class="muted">Save a JSON backup to move data between devices or protect your XP history.</p><div class="actions" style="margin-top:15px">'+button('Download backup','export','small')+button('Import backup','import','small outline')+button('Erase local progress','clear','small danger')+'</div><p class="hint" style="margin-top:12px">Importing replaces your current local progress; export a backup first.</p></section></div>';
 const render=()=>{document.getElementById('top-title').textContent=titles[view]||titles.dashboard;document.querySelectorAll('[data-view]').forEach(b=>b.classList.toggle('active',b.dataset.view===view));document.getElementById('app').innerHTML=({dashboard,quests:questsHtml,training,achievements,history,settings}[view]||dashboard)()};
