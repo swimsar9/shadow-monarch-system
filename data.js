@@ -1,0 +1,1 @@
+window.SYSTEM_DATA = {start:'2026-10-12',version:1};
