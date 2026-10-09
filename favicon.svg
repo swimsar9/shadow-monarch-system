@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Shadow Monarch crown">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1a1640"/>
+      <stop offset="1" stop-color="#090e22"/>
+    </linearGradient>
+    <linearGradient id="crown" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#c0a0ff"/>
+      <stop offset="0.53" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#4de4f5"/>
+    </linearGradient>
+    <radialGradient id="aura">
+      <stop offset="0" stop-color="#704cda" stop-opacity=".5"/>
+      <stop offset="1" stop-color="#704cda" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect x="1.5" y="1.5" width="61" height="61" rx="15" fill="url(#bg)" stroke="#9670f2" stroke-width="2"/>
+  <circle cx="32" cy="34" r="28" fill="url(#aura)"/>
+  <path d="M13 22 23 31 32 15 41 31 51 22 46 44H18Z" fill="url(#crown)" stroke="#c9bbff" stroke-width="1.6" stroke-linejoin="round"/>
+  <path d="M32 24 37.5 33 32 40 26.5 33Z" fill="#0b1530" stroke="#b8fbff" stroke-width="1.2" stroke-linejoin="round"/>
+  <path d="M20 49H44" stroke="#5deaff" stroke-width="3" stroke-linecap="round"/>
+</svg>
