@@ -30,6 +30,12 @@ window.SYSTEM_DATA = {
     Thursday: [['Warmup: Row','1,000 m'],['Bench press','3×8–10'],['Tricep pushdowns','3×10–12'],['Cable lateral raises','3×8 per side'],['Chest fly','3×8–10'],['Shoulder press','3×8–10'],['Pushups','3×AMRAP; count toward Saitama'],['Core work','10 min'],['Thursday easy run','Can replace post-lift cardio']],
     Friday: [['Warmup: Stairmaster','5 min'],['Hamstring curls','3×8–10'],['Hip abduction / adduction','3/2×AMRAP'],['Hip thrust → KAS bridges + hold','3×8–10'],['RDLs','3×8–10'],['Goblet squats','3×10–12'],['Step-ups','2×10–12 per side'],['Incline treadmill','Up to 30 min; ease off before long run'],['Stretch and optional sauna','Cool down']]
   },
+  ongoingRunning: [
+    ['A · Foundation','4–6K easy + strides','4–6K easy','8–10K','Conversational base building'],
+    ['B · Build','5–7K with tempo','4–6K easy','10–12K','Controlled quality and endurance'],
+    ['C · Consolidate','5–7K with intervals','5–6K easy','10–14K','Adjust to your next race goal'],
+    ['D · Recovery','4–5K relaxed','3–5K easy or rest','6–9K','Deload / maintain consistency']
+  ],
   achievements: [
     ['Module Conqueror','Passed the first med-school module','🏆','historical'],
     ['Problem Solver','Passed the first problem-solving exam','🧠','historical'],
@@ -39,6 +45,23 @@ window.SYSTEM_DATA = {
     ['Distance Breaker','Complete the first 15K','⛰','distance'],
     ['Iron Will','Keep consistent with strength training','💪','gym'],
     ['Anki Streak','Complete Anki seven days in a row','📚','anki'],
-    ['Recovery Master','Prioritize needed recovery seven times','🌙','recovery']
+    ['Recovery Master','Log 7 recovery overrides when needed','🌙','recovery'],
+    ['Study Sentinel','Complete Anki on 30 logged days','📖','study30'],
+    ['Library Guardian','Complete Anki on 100 logged days','📜','study100'],
+    ['Quiz Slayer','Pass 10 logged quizzes','⚡','quiz10'],
+    ['Module Hunter','Pass 3 logged module exams','🎓','module3'],
+    ['Steel Vanguard','Complete 25 logged gym sessions','🛡️','gym25'],
+    ['Centurion Lifter','Complete 100 logged gym sessions','🏋️','gym100'],
+    ['Trail Initiate','Complete 10 logged runs','👟','runner10'],
+    ['Endurance Knight','Complete 50 logged runs','🏃','runner50'],
+    ['Hundred-Kilometer Shadow','Log 100 cumulative running km','🌌','run100km'],
+    ['Five-Hundred-Kilometer Legend','Log 500 cumulative running km','🌠','run500km'],
+    ['Step Hunter','Reach 10,000 steps on 10 logged days','👣','steps10'],
+    ['Mobility Adept','Complete 30 mobility days','🌿','mobility30'],
+    ['Flow Master','Complete 100 mobility days','🌀','mobility100'],
+    ['Grappling Initiate','Complete 10 logged BJJ sessions','🥋','bjj10'],
+    ['Quest Keeper','Earn XP on 30 logged days','🔮','quests30'],
+    ['Questmaster','Earn XP on 100 logged days','👑','quests100'],
+    ['Legend of the Long Game','Earn XP on 365 logged days','🌟','quests365']
   ]
 };
