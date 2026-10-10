@@ -184,13 +184,13 @@ document.addEventListener('click',e=>{
  const v=e.target.closest('[data-view]');if(v){setView(v.dataset.view);return}
  const statBtn=e.target.closest('[data-stats-action]');if(statBtn&&window.HUNTER_STATS){const redraw=window.HUNTER_STATS.change(statBtn.dataset.statsAction,statBtn.dataset.statsValue,statsContext());if(redraw)render();return}
  const d=e.target.closest('[data-day]');if(d){activeDay=d.dataset.day;render();return}
- const jump=e.target.closest('[data-go-date]');if(jump){selected=jump.dataset.goDate;setView('quests');return}
+ const jump=e.target.closest('[data-go-date]');if(jump){selected=jump.dataset.goDate;showExamBosses=false;setView('quests');return}
  const b=e.target.closest('[data-action]');if(!b)return;
  switch(b.dataset.action){
  case 'exam-boss':showExamBosses=!showExamBosses;render();break;
  case 'quests':case 'training':setView(b.dataset.action);break;
- case 'prev':selected=dateShift(selected,-1);if(selected<START)selected=START;render();break;
- case 'next':selected=dateShift(selected,1);render();break;
+ case 'prev':selected=dateShift(selected,-1);if(selected<START)selected=START;showExamBosses=false;render();break;
+ case 'next':selected=dateShift(selected,1);showExamBosses=false;render();break;
  case 'claim15k':
  if(state.bonuses.some(x=>x.id==='first15k'))return;
  if(confirm('Did you complete your FIRST 15K run? This awards +200 XP exactly once.')){state.bonuses.push({id:'first15k',date:selected,xp:200,title:'Distance Breaker'});save();render();notify('+200 XP · DISTANCE BREAKER UNLOCKED!')}break;
@@ -204,7 +204,7 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',e=>{
  if(e.target.id==='stats-metric'&&window.HUNTER_STATS){window.HUNTER_STATS.change('metric',e.target.value,statsContext());render();return}
  if(e.target.id==='stats-focus'&&window.HUNTER_STATS){window.HUNTER_STATS.change('focus',e.target.value,statsContext());render();return}
- if(e.target.id==='quest-date'){if(e.target.value&&e.target.value>=START){selected=e.target.value;render()}return}
+ if(e.target.id==='quest-date'){if(e.target.value&&e.target.value>=START){selected=e.target.value;showExamBosses=false;render()}return}
  if(e.target.id==='rank-select'){state.rank=e.target.value;save();render();return}
  const key=e.target.dataset.target;if(key){state.targets[key]=n(e.target.value);save();render();return}
  const lift=e.target.dataset.liftItem;
