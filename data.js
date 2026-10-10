@@ -1,6 +1,12 @@
 window.SYSTEM_DATA = {
   start: '2026-10-12',
   targets: { calories: 1700, protein: 127, carbs: 191, fat: 47, steps: 10000 },
+  academicBosses: [
+    {date:'2026-11-09',title:'Anatomy Lab Practical 1',key:'anatomyPractical1',xp:100,kind:'Anatomy practical'},
+    {date:'2026-12-04',title:'Anatomy Lab Practical 2',key:'anatomyPractical2',xp:100,kind:'Anatomy practical'},
+    {date:'2026-12-07',title:'Problem-Solving Exam',key:'problem',xp:100,kind:'Problem solving'},
+    {date:'2026-12-10',title:'Module Exam',key:'module',xp:150,kind:'Module exam'}
+  ],
   schedule: {
     Sunday: 'BJJ / Recovery',
     Monday: 'Glutes',
