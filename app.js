@@ -98,16 +98,62 @@ const achieved=kind=>{
  }
 };
 
-const questsHtml=()=>{const e=get(selected),weekday=day(selected),schedule=(DATA.schedule||{})[weekday]||'';
+const KM_TO_MI=0.6213711922;
+const miles=km=>n(km)*KM_TO_MI;
+const kmText=km=>n(km).toFixed(2)+' km / '+miles(km).toFixed(2)+' mi';
+const distanceText=text=>String(text??'').replace(/(\d+(?:\.\d+)?)(?:\s*([–-])\s*(\d+(?:\.\d+)?))?\s*(?:km|K)\b/g,(whole,one,dash,two)=>{
+ const fmt=x=>Number(x).toFixed(2);
+ return whole+' ('+fmt(Number(one)*KM_TO_MI)+(two?'–'+fmt(Number(two)*KM_TO_MI):'')+' mi)';
+});
+const plannedRun=date=>{
+ const weekday=day(date),slot={Tuesday:2,Thursday:3,Saturday:4}[weekday];
+ if(slot===undefined)return null;
+ const week=currentWeek(date);
+ const row=(DATA.running||[]).find(x=>Number(x[0])===week);
+ if(row)return{title:'Road to 15K · Week '+week,description:distanceText(row[slot]),notes:row[5]||''};
+ const cycles=DATA.ongoingRunning||[];
+ const cycle=cycles.length?cycles[((week-24)%cycles.length+cycles.length)%cycles.length]:null;
+ return cycle?{title:'Endless Ascent · '+cycle[0],description:distanceText(cycle[slot-1]),notes:cycle[4]||''}:{title:'Scheduled '+weekday+' run',description:'Easy running',notes:''};
+};
+let showExamBosses=false;
+const questsHtml=()=>{
+ const e=get(selected),weekday=day(selected),schedule=(DATA.schedule||{})[weekday]||'';
+ const gymScheduled=Object.prototype.hasOwnProperty.call(DATA.gym||{},weekday);
+ const runPlan=plannedRun(selected),bjjScheduled=weekday==='Sunday',quizScheduled=weekday==='Friday';
+ const liftItems=(e.liftItems&&typeof e.liftItems==='object')?e.liftItems:{};
  const check=(label,k,xp,desc='')=>'<div class="quest '+(flag(e,k)?'done':'')+'"><label><input type="checkbox" data-field="'+k+'" '+(flag(e,k)?'checked':'')+'><span><strong>'+escape(label)+'</strong><small>'+escape(desc)+'</small></span></label><span class="xp-pill">+'+xp+' XP</span></div>';
  const field=(label,k,placeholder='',step=1)=>'<label class="field"><span>'+escape(label)+'</span><input type="number" min="0" step="'+step+'" data-field="'+k+'" placeholder="'+escape(placeholder)+'" value="'+(e[k]??'')+'"></label>';
- const earned=xpFor(e,selected);return '<div class="stack">'+(window.HUNTER_STATS?window.HUNTER_STATS.daily(e):'')+
- '<section class="card"><div class="today-top"><div><span class="kicker">Daily Gate / Week '+currentWeek(selected)+'</span><h2>'+escape(pretty(selected))+' · '+weekday+'</h2><p class="muted">'+escape(schedule)+'</p></div><div class="date-nav">'+button('← Previous','prev','small outline')+'<input class="input" aria-label="Quest date" id="quest-date" type="date" min="'+START+'" value="'+selected+'">'+button('Next →','next','small outline')+'</div></div><div class="divider"></div><div class="grid two">'+stat('XP earned today',earned.xp+' XP',earned.lines.length+' quest awards','gold')+stat('Saitama reps',format(count(e,'pushups')+count(e,'situps')+count(e,'burpees'))+'/300','Full protocol only when recovery allows','purple')+'</div></section>'+
- '<div class="grid two"><section class="card"><h2>🧠 Academic missions</h2><div class="quest-list">'+check('Daily Anki','anki',20,'Complete due reviews')+check('Extra review / practice','review',15,'Additional material beyond due Anki')+'</div><div class="divider"></div><div class="fields three">'+field('Study hours','studyHours','Total today',.25)+field('Anki cards completed','ankiCards','Total today')+field('Practice questions','practiceQuestions','Optional')+'</div><div class="divider"></div><div class="fields">'+field('Lectures planned','lecturesPlanned')+field('Lectures completed','lecturesDone')+'</div><p class="hint" style="margin-top:8px">+25 XP when a nonzero planned lecture target is completed.</p><div class="divider"></div><div class="quest-list">'+check('Pass Friday quiz','quiz',50)+check('Pass module exam','module',150)+check('Pass problem-solving exam','problem',100)+'</div></section>'+
- '<section class="card"><h2>⚔️ Training missions</h2><div class="quest-list">'+(weekday!=='Saturday'&&weekday!=='Sunday'?check('Scheduled gym','gym',30,weekday+' lifting session'):'')+(['Tuesday','Thursday','Saturday'].includes(weekday)?check(weekday==='Saturday'?'Saturday long run':'Scheduled run','run',weekday==='Saturday'?35:25,'Use the Training Arc plan'):'')+(weekday==='Sunday'?check('BJJ session','bjj',30):'')+check('Mobility','mobility',10,'10–15 min')+check('New strength PR','pr',10)+'</div><div class="divider"></div><div class="fields">'+field('Run distance (km)','runKm','Optional',.1)+field('Run time (minutes)','runMinutes','Optional')+field('Gym time (minutes)','gymMinutes','Optional')+field('BJJ time (minutes)','bjjMinutes','Optional')+field('Mobility time (minutes)','mobilityMinutes','Optional')+'</div></section></div>'+
- '<div class="grid two"><section class="card"><h2>🥊 Saitama Protocol</h2><p class="hint">Sets count; the 100/100/100 protocol is optional on recovery days. Partial credit at 50+ reps.</p><div class="fields three" style="margin-top:14px">'+field('Pushups','pushups','0–100+')+field('Sit-ups','situps','0–100+')+field('Burpees','burpees','0–100+')+'</div><div class="divider"></div>'+field('Steps','steps','10,000 goal')+'</section>'+
- '<section class="card"><h2>🌙 Nutrition & Recovery</h2><p class="hint">Provisional target '+format(state.targets.calories)+' kcal · '+format(state.targets.protein)+'g protein. No bonus for eating less.</p><div class="fields three" style="margin-top:14px">'+field('Calories','calories','',1)+field('Protein (g)','protein','',1)+field('Carbs (g)','carbs','',1)+field('Fat (g)','fat','',1)+'</div><div class="divider"></div><div class="fields">'+field('Hours slept','sleepHours','Optional',.25)+'</div><div class="divider"></div><div class="quest-list">'+check('Sleep plan followed','sleep',15)+check('Daily planning','planning',10)+check('Recovery override','recovery',15,'Rest or modify training appropriately')+'</div></section></div>'+
- '<section class="card"><h2>Daily notes</h2><label class="field"><span>How did today go?</span><textarea data-field="notes" rows="3" placeholder="Progress, energy, recovery, coursework…">'+escape(e.notes||'')+'</textarea></label><p class="hint" style="margin-top:10px">Changes are saved to this browser automatically after you finish editing a field.</p></section></div>';
+ const kmValue=e.runKm??'';
+ const milesValue=kmValue===''?'':Math.round(miles(kmValue)*100)/100;
+ const runMilesField='<label class="field"><span>Run distance (mi)</span><input type="number" min="0" step="0.01" data-field="runMi" placeholder="Miles" value="'+milesValue+'"></label>';
+ const workout=(DATA.gym||{})[weekday]||[];
+ const checkedLift=workout.filter((_,i)=>!!liftItems[i]).length;
+ const gymCard=gymScheduled?
+ '<section class="card"><div class="today-top"><div><span class="kicker">⚔️ Today’s strength workout</span><h2>'+escape(weekday+' · '+schedule.replace(/\s*·?\s*Run$/,''))+'</h2></div><span class="tag">'+checkedLift+' / '+workout.length+' checked</span></div><p class="hint" style="margin:8px 0 13px">Check each exercise as you go. The full workout checkbox awards the +30 XP.</p>'+
+ check('Complete '+weekday+' workout','gym',30,'Finished the planned strength session')+
+ '<div class="workout-checklist">'+workout.map(([exercise,reps],i)=>'<label class="workout-step '+(liftItems[i]?'completed':'')+'"><input type="checkbox" data-lift-item="'+i+'" '+(liftItems[i]?'checked':'')+'><span>'+escape(exercise)+'</span><small>'+escape(reps)+'</small></label>').join('')+'</div></section>':'';
+ const runningCard=runPlan?
+ '<section class="card"><div class="today-top"><div><span class="kicker">🏃 Today’s run · '+escape(runPlan.title)+'</span><h2>'+escape(runPlan.description)+'</h2></div><span class="tag">'+(weekday==='Saturday'?'+35':'+25')+' XP</span></div><p class="hint" style="margin:8px 0 13px">'+escape(runPlan.notes)+' · Warm up and cool down. Adjust for recovery as needed.</p>'+
+ check('Complete '+weekday+' run','run',weekday==='Saturday'?35:25,runPlan.description)+
+ '<div class="fields" style="margin-top:13px">'+field('Distance (km)','runKm','Kilometers',.01)+runMilesField+field('Run time (minutes)','runMinutes','Minutes')+'</div><p class="hint">Enter either kilometers or miles; the other unit converts automatically. Both refer to the same run.</p></section>':'';
+ const recoveryCard=bjjScheduled?
+ '<section class="card"><h2>🥋 Sunday BJJ</h2><div class="quest-list">'+check('Complete BJJ session','bjj',30,'Grappling practice · technique and recovery first')+'</div><div class="fields" style="margin-top:13px">'+field('BJJ duration (min)','bjjMinutes','Optional')+'</div></section>':'';
+ const examVisible=showExamBosses||flag(e,'module')||flag(e,'problem');
+ const examBoss='<div style="margin-top:12px"><button type="button" class="button small outline" data-action="exam-boss">'+(examVisible?'Hide special exams':'Log a special exam boss')+'</button></div>'+
+ (examVisible?'<div class="quest-list" style="margin-top:12px">'+check('Pass module exam','module',150,'Only check on your actual exam date')+check('Pass problem-solving exam','problem',100,'Only check on your actual exam date')+'</div>':'');
+ const earned=xpFor(e,selected);
+ return '<div class="stack">'+(window.HUNTER_STATS?window.HUNTER_STATS.daily(e):'')+
+ '<section class="card"><div class="today-top"><div><span class="kicker">Daily Gate / Week '+currentWeek(selected)+'</span><h2>'+escape(pretty(selected))+' · '+weekday+'</h2><p class="muted">'+escape(schedule)+'</p></div><div class="date-nav">'+button('← Previous','prev','small outline')+'<input class="input" aria-label="Quest date" id="quest-date" type="date" min="'+START+'" value="'+selected+'">'+button('Next →','next','small outline')+'</div></div><div class="divider"></div><div class="grid two">'+stat('XP earned today',earned.xp+' XP',earned.lines.length+' quest awards','gold')+stat('OPM Challenge reps',format(count(e,'pushups')+count(e,'situps')+count(e,'burpees'))+'/300','Full protocol only when recovery allows','purple')+'</div></section>'+
+ '<section class="card"><h2>🧠 Academic missions</h2><div class="quest-list">'+check('Daily Anki','anki',20,'Complete due reviews')+check('Extra review / practice','review',15,'Additional material beyond due Anki')+
+ (quizScheduled?check('Pass Friday quiz','quiz',50,'Only appears on Friday'):'')+
+ '</div><div class="divider"></div><div class="fields three">'+field('Study hours','studyHours','Total today',.25)+field('Anki cards completed','ankiCards','Total today')+field('Practice questions','practiceQuestions','Optional')+'</div><div class="divider"></div><div class="fields">'+field('Lectures planned','lecturesPlanned')+field('Lectures completed','lecturesDone')+'</div><p class="hint" style="margin-top:8px">+25 XP when your nonzero planned lecture target is completed.</p>'+examBoss+'</section>'+
+ (gymCard||runningCard||recoveryCard?
+ '<div class="quest-day-specific">'+gymCard+runningCard+recoveryCard+'</div>':
+ '<div class="note"><strong>Recovery-focused day.</strong> No gym, run, or BJJ is scheduled. Your daily quests and recovery still count.</div>')+
+ '<section class="card"><h2>⚔️ Daily training & movement</h2><div class="quest-list">'+check('Mobility','mobility',10,'10–15 min')+(gymScheduled?check('New strength PR','pr',10,'Only if you set a PR during today’s lift'):'')+'</div><div class="fields" style="margin-top:12px">'+(gymScheduled?field('Gym time (minutes)','gymMinutes','Optional'):'')+field('Mobility time (minutes)','mobilityMinutes','Optional')+'</div></section>'+
+ '<div class="grid two"><section class="card"><h2>🥊 OPM Challenge</h2><p class="hint">100 pushups · 100 sit-ups · 100 burpees. Count sets across the day. Modify or rest when needed.</p><div class="fields three" style="margin-top:14px">'+field('Pushups','pushups','0–100+')+field('Sit-ups','situps','0–100+')+field('Burpees','burpees','0–100+')+'</div><div class="divider"></div>'+field('Steps','steps','10,000 goal')+'</section>'+
+ '<section class="card"><h2>🌙 Nutrition & Recovery</h2><p class="hint">Provisional target '+format(state.targets.calories)+' kcal · '+format(state.targets.protein)+'g protein. No bonus for under-eating.</p><div class="fields three" style="margin-top:14px">'+field('Calories','calories','',1)+field('Protein (g)','protein','',1)+field('Carbs (g)','carbs','',1)+field('Fat (g)','fat','',1)+'</div><div class="divider"></div><div class="fields">'+field('Hours slept','sleepHours','Optional',.25)+'</div><div class="divider"></div><div class="quest-list">'+check('Sleep plan followed','sleep',15)+check('Daily planning','planning',10)+check('Recovery override','recovery',15,'Modify training or rest responsibly')+'</div></section></div>'+
+ '<section class="card"><h2>Daily notes</h2><label class="field"><span>How did today go?</span><textarea data-field="notes" rows="3" placeholder="Progress, energy, recovery, coursework…">'+escape(e.notes||'')+'</textarea></label><p class="hint" style="margin-top:10px">Changes are saved in this browser automatically after you finish editing a field.</p></section></div>';
 };
 const dashboard=()=>{const t=total(),l=lvFor(t),e=get(selected),recent=dailyRecords().slice(0,6);
  const postGate=achieved('distance')||now()>'2026-12-26';
