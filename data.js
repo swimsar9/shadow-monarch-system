@@ -27,7 +27,7 @@ window.SYSTEM_DATA = {
     Monday: [['Warmup: Stairmaster','5 min'],['Hip thrust → KAS bridges + hold','3×8–10'],['B-stance RDL','3×8–10 per side'],['Bulgarian split squat','2×10–12 per side'],['Calf extensions','3×10–12'],['Kickbacks / side kickbacks','2+2×12 per side'],['Incline treadmill','30 min, 5% at speed 3'],['Stretch and optional sauna','Cool down']],
     Tuesday: [['Warmup: Row','1,000 m'],['Assisted pull-ups','3×AMRAP'],['Lat pulldown','3×8–10'],['Rows','3×8–10'],['Face pulls','3×10–12'],['Rear-delt fly','2×8–10 per side'],['Bicep + hammer curls','2×8–10'],['Back extensions','3×8–10'],['Core work','10 min'],['Tuesday quality run','Can replace post-lift cardio']],
     Wednesday: [['Warmup: Stairmaster','5 min'],['Hamstring curls','3×8–10'],['Quad extensions','3×8–10'],['Leg press','3×8–10'],['RDLs','3×10–12'],['Hyperextensions','3×10–12'],['Calf raises','3×10–12'],['Incline treadmill','30 min, 3–5% at speed 3']],
-    Thursday: [['Warmup: Row','1,000 m'],['Bench press','3×8–10'],['Tricep pushdowns','3×10–12'],['Cable lateral raises','3×8 per side'],['Chest fly','3×8–10'],['Shoulder press','3×8–10'],['Pushups','3×AMRAP; count toward Saitama'],['Core work','10 min'],['Thursday easy run','Can replace post-lift cardio']],
+    Thursday: [['Warmup: Row','1,000 m'],['Bench press','3×8–10'],['Tricep pushdowns','3×10–12'],['Cable lateral raises','3×8 per side'],['Chest fly','3×8–10'],['Shoulder press','3×8–10'],['Pushups','3×AMRAP; count toward OPM Challenge'],['Core work','10 min'],['Thursday easy run','Can replace post-lift cardio']],
     Friday: [['Warmup: Stairmaster','5 min'],['Hamstring curls','3×8–10'],['Hip abduction / adduction','3/2×AMRAP'],['Hip thrust → KAS bridges + hold','3×8–10'],['RDLs','3×8–10'],['Goblet squats','3×10–12'],['Step-ups','2×10–12 per side'],['Incline treadmill','Up to 30 min; ease off before long run'],['Stretch and optional sauna','Cool down']]
   },
   ongoingRunning: [
@@ -41,7 +41,7 @@ window.SYSTEM_DATA = {
     ['Problem Solver','Passed the first problem-solving exam','🧠','historical'],
     ['10K Veteran','Completed three 10K races','🏃','historical'],
     ['Quiz Comeback','Passed quizzes after the first','✨','historical'],
-    ['One Punch Disciple','Complete a 100/100/100 Saitama day','🥊','saitama'],
+    ['One Punch Disciple','Complete a 100/100/100 OPM Challenge day','🥊','saitama'],
     ['Distance Breaker','Complete the first 15K','⛰','distance'],
     ['Iron Will','Complete 4 consecutive weeks with 4 gym sessions each','💪','gym'],
     ['Anki Streak','Complete Anki seven days in a row','📚','anki'],
@@ -54,8 +54,8 @@ window.SYSTEM_DATA = {
     ['Centurion Lifter','Complete 100 logged gym sessions','🏋️','gym100'],
     ['Trail Initiate','Complete 10 logged runs','👟','runner10'],
     ['Endurance Knight','Complete 50 logged runs','🏃','runner50'],
-    ['Hundred-Kilometer Shadow','Log 100 cumulative running km','🌌','run100km'],
-    ['Five-Hundred-Kilometer Legend','Log 500 cumulative running km','🌠','run500km'],
+    ['Hundred-Kilometer Shadow','Log 100 km of running','🌌','run100km'],
+    ['Five-Hundred-Kilometer Legend','Log 500 km of running','🌠','run500km'],
     ['Step Hunter','Reach 10,000 steps on 10 logged days','👣','steps10'],
     ['Mobility Adept','Complete 30 mobility days','🌿','mobility30'],
     ['Flow Master','Complete 100 mobility days','🌀','mobility100'],
