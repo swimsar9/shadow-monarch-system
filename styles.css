@@ -34,3 +34,17 @@
 .quest-day-specific>.card .tag{white-space:nowrap}
 @media(max-width:1080px){.quest-day-specific{grid-template-columns:1fr}}
 @media(max-width:700px){.workout-step{grid-template-columns:20px minmax(0,1fr);gap:8px}.workout-step small{grid-column:2;text-align:left;max-width:100%;margin-top:-5px}}
+
+/* V5 • Academic exam calendar and dated boss cards */
+.boss-event-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.boss-event{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 15px;border:1px solid #3c3c68;border-radius:12px;background:linear-gradient(140deg,#1b1d39,#12172c);color:#eff1ff;text-align:left}
+.boss-event:hover{border-color:#af92f5;background:linear-gradient(140deg,#27234e,#151b37)}
+.boss-event-main,.boss-event-side{display:grid;gap:5px}
+.boss-event-main strong{font-size:13px}
+.boss-event-main small{font-size:11px;color:#a5b6d9}
+.boss-event-side{justify-items:end;flex-shrink:0}
+.boss-event-side>small{font-size:11px;color:#7de4f1;font-weight:750}
+.boss-card{border-color:#5d4b8e;background:radial-gradient(ellipse at 100% 0%,rgba(113,70,187,.2),transparent 50%),linear-gradient(160deg,#1a1a37,#10152a)}
+.boss-card .quest{border-color:#4d467e}
+@media(max-width:1000px){.boss-event-list{grid-template-columns:1fr}}
+@media(max-width:520px){.boss-event{padding:11px;gap:7px}.boss-event-main strong{font-size:12px}.boss-event-main small{font-size:10px}.boss-event-side .tag{font-size:9px;padding:3px 6px}}
