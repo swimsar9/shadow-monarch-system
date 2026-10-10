@@ -20,3 +20,17 @@
 @media(max-width:850px){.analytics-categories{grid-template-columns:1fr}.analytics-picker{min-width:160px}}
 @media(max-width:700px){.analytics-chart{height:202px;gap:4px}.analytics-bar-col{min-width:14px}.analytics-bar-col strong{font-size:9px}.analytics-categories{grid-template-columns:1fr}.analytics-hero{min-height:185px}.analytics-picker{width:100%}.analytics-hero .hero-stats{gap:15px}}
 @media(max-width:375px){.analytics-chart{overflow-x:auto}.analytics-bar-col{min-width:20px}.mobile-nav button{padding:3px 3px;font-size:16px}.mobile-nav small{font-size:9px}}
+
+
+/* V4 • Day-specific workout checklists */
+.quest-day-specific{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;align-items:start}
+.quest-day-specific>.card:only-child{grid-column:1/-1}
+.workout-checklist{display:grid;gap:6px;margin-top:14px}
+.workout-step{display:grid;grid-template-columns:20px minmax(0,1fr) auto;align-items:start;gap:10px;cursor:pointer;color:#d9e3fa;padding:10px 12px;border:1px solid #293657;background:#101a32;border-radius:10px}
+.workout-step input{width:17px;height:17px;accent-color:#9b75ff;margin:2px 0 0}
+.workout-step small{text-align:right;color:#97a8ca;font-size:12px;white-space:normal;max-width:150px}
+.workout-step.completed{background:#14312d;border-color:#376c60}
+.workout-step.completed>span{text-decoration:line-through;text-decoration-color:#668d88;color:#a3b9bb}
+.quest-day-specific>.card .tag{white-space:nowrap}
+@media(max-width:1080px){.quest-day-specific{grid-template-columns:1fr}}
+@media(max-width:700px){.workout-step{grid-template-columns:20px minmax(0,1fr);gap:8px}.workout-step small{grid-column:2;text-align:left;max-width:100%;margin-top:-5px}}
