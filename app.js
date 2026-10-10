@@ -39,6 +39,8 @@ const xpFor=(e,d)=>{
  add('Weekly quiz passed',flag(e,'quiz')?50:0);
  add('Module exam passed',flag(e,'module')?150:0);
  add('Problem-solving exam passed',flag(e,'problem')?100:0);
+ add('Anatomy Lab Practical 1 passed',d==='2026-11-09'&&flag(e,'anatomyPractical1')?100:0);
+ add('Anatomy Lab Practical 2 passed',d==='2026-12-04'&&flag(e,'anatomyPractical2')?100:0);
  add('Recovery override',flag(e,'recovery')?15:0);
  return {xp:v,lines};
 };
@@ -116,6 +118,20 @@ const plannedRun=date=>{
  return cycle?{title:'Endless Ascent · '+cycle[0],description:distanceText(cycle[slot-1]),notes:cycle[4]||''}:{title:'Scheduled '+weekday+' run',description:'Easy running',notes:''};
 };
 let showExamBosses=false;
+const examBosses=(DATA.academicBosses||[]).slice().sort((a,b)=>a.date.localeCompare(b.date));
+const examStatus=(boss)=>flag(get(boss.date),boss.key)?'DEFEATED':boss.date<now()?'DATE PASSED':boss.date===now()?'TODAY':'UPCOMING';
+const examCountdown=(date)=>Math.round(dayNumber(date)-dayNumber(now()));
+const upcomingBossBoard=()=>{
+ if(!examBosses.length)return '';
+ const future=examBosses.filter(x=>x.date>=now()||flag(get(x.date),x.key));
+ return '<section class="card"><div class="today-top"><div><span class="kicker">📆 ACADEMIC ARC · FALL 2026</span><h2>Scheduled Boss Battles</h2></div><span class="tag">4 EXAMS</span></div>'+
+ '<p class="hint" style="margin:7px 0 14px">Choose a date to open its daily quest board. Boss XP is earned only when you mark the exam as passed.</p>'+
+ '<div class="boss-event-list">'+examBosses.map(boss=>{
+  const status=examStatus(boss),days=examCountdown(boss.date);
+  const timing=status==='DEFEATED'?'✓ Passed':days===0?'Today':days>0?'In '+days+' day'+(days===1?'':'s'):'Date passed';
+  return '<button class="boss-event" data-go-date="'+escape(boss.date)+'" aria-label="Open '+escape(boss.title)+' daily quests"><span class="boss-event-main"><strong>'+escape(boss.title)+'</strong><small>'+escape(pretty(boss.date))+' · '+escape(boss.kind)+'</small></span><span class="boss-event-side"><span class="tag '+(status==='DEFEATED'?'greentag':'goldtag')+'">'+escape(timing)+'</span><small>+'+boss.xp+' XP</small></span></button>';
+ }).join('')+'</div></section>';
+};
 const questsHtml=()=>{
  const e=get(selected),weekday=day(selected),schedule=(DATA.schedule||{})[weekday]||'';
  const gymScheduled=Object.prototype.hasOwnProperty.call(DATA.gym||{},weekday);
@@ -138,15 +154,26 @@ const questsHtml=()=>{
  '<div class="fields" style="margin-top:13px">'+field('Distance (km)','runKm','Kilometers',.01)+runMilesField+field('Run time (minutes)','runMinutes','Minutes')+'</div><p class="hint">Enter either kilometers or miles; the other unit converts automatically. Both refer to the same run.</p></section>':'';
  const recoveryCard=bjjScheduled?
  '<section class="card"><h2>🥋 Sunday BJJ</h2><div class="quest-list">'+check('Complete BJJ session','bjj',30,'Grappling practice · technique and recovery first')+'</div><div class="fields" style="margin-top:13px">'+field('BJJ duration (min)','bjjMinutes','Optional')+'</div></section>':'';
- const examVisible=showExamBosses||flag(e,'module')||flag(e,'problem');
- const examBoss='<div style="margin-top:12px"><button type="button" class="button small outline" data-action="exam-boss">'+(examVisible?'Hide special exams':'Log a special exam boss')+'</button></div>'+
- (examVisible?'<div class="quest-list" style="margin-top:12px">'+check('Pass module exam','module',150,'Only check on your actual exam date')+check('Pass problem-solving exam','problem',100,'Only check on your actual exam date')+'</div>':'');
+ const todaysBosses=examBosses.filter(b=>b.date===selected);
+ const isUnscheduled=flag(e,'module')&&!todaysBosses.some(b=>b.key==='module')||flag(e,'problem')&&!todaysBosses.some(b=>b.key==='problem');
+ const examVisible=showExamBosses||isUnscheduled;
+ const examBoss='<div style="margin-top:12px"><button type="button" class="button small outline" data-action="exam-boss">'+(examVisible?'Hide unscheduled exam logging':'Log a rescheduled or makeup exam')+'</button></div>'+
+ (examVisible?'<div class="quest-list" style="margin-top:12px">'+
+ (!todaysBosses.some(b=>b.key==='module')?check('Passed a rescheduled module exam','module',150,'Use only for an actual makeup or rescheduled exam'):'')+
+ (!todaysBosses.some(b=>b.key==='problem')?check('Passed a rescheduled problem-solving exam','problem',100,'Use only for an actual makeup or rescheduled exam'):'')+
+ '</div>':'');
+ const todayBossCard=todaysBosses.length?
+ '<section class="card boss-card"><div class="today-top"><div><span class="kicker">⚔️ SCHEDULED ACADEMIC BOSS</span><h2>'+escape(todaysBosses.map(b=>b.title).join(' · '))+'</h2></div><span class="tag goldtag">'+escape(pretty(selected))+'</span></div>'+
+ '<p class="hint" style="margin:10px 0 13px">Scheduled for this date. Check off after you know you passed; completing other daily quests remains optional.</p>'+
+ '<div class="quest-list">'+todaysBosses.map(b=>check('Pass '+b.title,b.key,b.xp,'Academic boss battle · '+b.kind)).join('')+'</div></section>':'';
+
  const earned=xpFor(e,selected);
  return '<div class="stack">'+(window.HUNTER_STATS?window.HUNTER_STATS.daily(e):'')+
  '<section class="card"><div class="today-top"><div><span class="kicker">Daily Gate / Week '+currentWeek(selected)+'</span><h2>'+escape(pretty(selected))+' · '+weekday+'</h2><p class="muted">'+escape(schedule)+'</p></div><div class="date-nav">'+button('← Previous','prev','small outline')+'<input class="input" aria-label="Quest date" id="quest-date" type="date" min="'+START+'" value="'+selected+'">'+button('Next →','next','small outline')+'</div></div><div class="divider"></div><div class="grid two">'+stat('XP earned today',earned.xp+' XP',earned.lines.length+' quest awards','gold')+stat('OPM Challenge reps',format(count(e,'pushups')+count(e,'situps')+count(e,'burpees'))+'/300','Full protocol only when recovery allows','purple')+'</div></section>'+
  '<section class="card"><h2>🧠 Academic missions</h2><div class="quest-list">'+check('Daily Anki','anki',20,'Complete due reviews')+check('Extra review / practice','review',15,'Additional material beyond due Anki')+
  (quizScheduled?check('Pass Friday quiz','quiz',50,'Only appears on Friday'):'')+
  '</div><div class="divider"></div><div class="fields three">'+field('Study hours','studyHours','Total today',.25)+field('Anki cards completed','ankiCards','Total today')+field('Practice questions','practiceQuestions','Optional')+'</div><div class="divider"></div><div class="fields">'+field('Lectures planned','lecturesPlanned')+field('Lectures completed','lecturesDone')+'</div><p class="hint" style="margin-top:8px">+25 XP when your nonzero planned lecture target is completed.</p>'+examBoss+'</section>'+
+ todayBossCard+
  (gymCard||runningCard||recoveryCard?
  '<div class="quest-day-specific">'+gymCard+runningCard+recoveryCard+'</div>':
  '<div class="note"><strong>Recovery-focused day.</strong> No gym, run, or BJJ is scheduled. Your daily quests and recovery still count.</div>')+
@@ -164,6 +191,7 @@ const dashboard=()=>{const t=total(),l=lvFor(t),e=get(selected),recent=dailyReco
  return '<div class="stack"><section class="hero"><div class="meta">✦ HUNTER STATUS · ' +phase+'</div><h2>'+escape(state.rank)+'-RANK HUNTER</h2><p class="subtitle">Level '+l.level+' · The road to S-Rank starts with consistency.</p><div class="hero-stats"><div class="hero-stat"><strong>'+format(t)+' XP</strong><small>TOTAL EXPERIENCE</small></div><div class="hero-stat"><strong>'+format(l.remaining)+' / '+format(l.need)+'</strong><small>LEVEL PROGRESS</small></div><div class="hero-stat"><strong>'+bossLabel+'</strong><small>'+(postGate?'NO END DATE':'ENDURANCE BOSS')+'</small></div></div>'+bar(l.remaining,l.need)+'<span class="tag">✨ Shadow Monarch Edition</span></section>'+
  '<div class="grid four">'+stat('Level',l.level,'Next level in '+format(l.need-l.remaining)+' XP')+stat('Quests logged',dailyRecords().filter(a=>a.xp>0).length,'Days with earned XP','purple')+stat('Gym sessions',sum('gym'),'Mon–Fri strength','green')+stat('Runs logged',sum('run'),'Tue · Thu · Sat','gold')+'</div>'+
  '<div class="note"><strong>Season '+thisYear+':</strong> '+format(seasonXP)+' XP this calendar year · Your lifetime XP and all achievements carry forward forever.</div>'+
+ upcomingBossBoard()+
  '<div class="grid two"><section class="card"><div class="today-top"><h2>Today’s Quest Board</h2>'+button('Open Quest Log ↗','quests','small')+'</div><div class="divider"></div><div class="metric"><span>Current date</span><strong>'+escape(pretty(selected))+'</strong></div><div class="metric"><span>Training</span><strong>'+escape(DATA.schedule?.[day(selected)]||'')+'</strong></div><div class="metric"><span>Earned XP</span><strong class="good">'+xpFor(e,selected).xp+'</strong></div><p class="hint" style="margin-top:12px">Daily quests and XP are reported by you, not automatically synced with Apple Health or Google Calendar.</p></section>'+
  '<section class="card"><h2>'+(postGate?'The Endless Ascent':'Road to 15K')+'</h2><p class="hint">'+(postGate?'Repeatable training seasons · More boss fights ahead':'11-week running arc · Starts Oct 12, 2026 · Target Dec 26')+'</p><div class="divider"></div><div class="metric"><span>Tuesday</span><strong>Quality / Tempo</strong></div><div class="metric"><span>Thursday</span><strong>Easy aerobic</strong></div><div class="metric"><span>Saturday</span><strong>Long run</strong></div><p class="hint" style="margin-top:11px">Training continues into future years. Repeat easy/build/recovery cycles and choose a new race target when ready.</p>'+button('See running plan','training','small outline')+'</section></div>'+
  (window.HUNTER_STATS?window.HUNTER_STATS.dashboard(statsContext()):'')+'<section class="card"><h2>Recent Hunter Reports</h2>'+(recent.length?'<div class="scroll"><table class="data-table"><thead><tr><th>Date</th><th>Focus</th><th>XP</th></tr></thead><tbody>'+recent.map(x=>'<tr><td>'+escape(pretty(x.date))+'</td><td>'+escape(DATA.schedule?.[day(x.date)]||'')+'</td><td><span class="xp-pill">+'+x.xp+'</span></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No official XP logged yet. Start with your first quest board!</div>')+'</section></div>';
