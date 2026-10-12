@@ -22,9 +22,11 @@ const flag=(e,key)=>!!e[key],count=(e,k)=>n(e[k]);
 const xpFor=(e,d)=>{
  let v=0,lines=[];const add=(name,x)=>{if(x>0){v+=x;lines.push([name,x])}};
  const weekday=day(d);
- add('Anki',flag(e,'anki')?20:0);
- add('Planned lectures',count(e,'lecturesPlanned')>0&&count(e,'lecturesDone')>=count(e,'lecturesPlanned')?25:0);
- add('Extra practice',flag(e,'review')?15:0);
+ add('Old Module 1 Anki',flag(e,'anki')?20:0);
+ add('Current MSK Anki',flag(e,'currentAnki')?20:0);
+ add('Current MSK lectures',flag(e,'lecturesComplete')||(count(e,'lecturesPlanned')>0&&count(e,'lecturesDone')>=count(e,'lecturesPlanned'))?25:0);
+ add('MSK lecture practice questions',flag(e,'review')?15:0);
+ add('Organize next week’s Anki decks',flag(e,'organizeAnki')?15:0);
  add('Strength workout',flag(e,'gym')&&['Monday','Tuesday','Wednesday','Thursday','Friday'].includes(weekday)?30:0);
  add('Run',flag(e,'run')?weekday==='Saturday'?35:['Tuesday','Thursday'].includes(weekday)?25:0:0);
  add('BJJ',flag(e,'bjj')&&weekday==='Sunday'?30:0);
@@ -132,8 +134,18 @@ const upcomingBossBoard=()=>{
   return '<button class="boss-event" data-go-date="'+escape(boss.date)+'" aria-label="Open '+escape(boss.title)+' daily quests"><span class="boss-event-main"><strong>'+escape(boss.title)+'</strong><small>'+escape(pretty(boss.date))+' · '+escape(boss.kind)+'</small></span><span class="boss-event-side"><span class="tag '+(status==='DEFEATED'?'greentag':'goldtag')+'">'+escape(timing)+'</span><small>+'+boss.xp+' XP</small></span></button>';
  }).join('')+'</div></section>';
 };
+
+/* Academic module defaults are suggestions; each day's visibility may be overridden without deleting earned XP. */
+const defaultAcademics=d=>{
+ const weekday=day(d),core=['Monday','Tuesday','Wednesday'].includes(weekday);
+ return {oldAnki:true,lectures:core,currentAnki:core,practice:core,organize:weekday==='Friday'};
+};
+const academicsFor=(d,e)=>({...defaultAcademics(d),...((e.academicPlan&&typeof e.academicPlan==='object')?e.academicPlan:{})});
+let showAcademicEditor=false;
+
 const questsHtml=()=>{
  const e=get(selected),weekday=day(selected),schedule=(DATA.schedule||{})[weekday]||'';
+ const academicPlan=academicsFor(selected,e);
  const gymScheduled=Object.prototype.hasOwnProperty.call(DATA.gym||{},weekday);
  const runPlan=plannedRun(selected),bjjScheduled=weekday==='Sunday',quizScheduled=weekday==='Friday';
  const liftItems=(e.liftItems&&typeof e.liftItems==='object')?e.liftItems:{};
@@ -170,9 +182,25 @@ const questsHtml=()=>{
  const earned=xpFor(e,selected);
  return '<div class="stack">'+(window.HUNTER_STATS?window.HUNTER_STATS.daily(e):'')+
  '<section class="card"><div class="today-top"><div><span class="kicker">Daily Gate / Week '+currentWeek(selected)+'</span><h2>'+escape(pretty(selected))+' · '+weekday+'</h2><p class="muted">'+escape(schedule)+'</p></div><div class="date-nav">'+button('← Previous','prev','small outline')+'<input class="input" aria-label="Quest date" id="quest-date" type="date" min="'+START+'" value="'+selected+'">'+button('Next →','next','small outline')+'</div></div><div class="divider"></div><div class="grid two">'+stat('XP earned today',earned.xp+' XP',earned.lines.length+' quest awards','gold')+stat('OPM Challenge reps',format(count(e,'pushups')+count(e,'situps')+count(e,'burpees'))+'/300','Full protocol only when recovery allows','purple')+'</div></section>'+
- '<section class="card"><h2>🧠 Academic missions</h2><div class="quest-list">'+check('Daily Anki','anki',20,'Complete due reviews')+check('Extra review / practice','review',15,'Additional material beyond due Anki')+
+ '<section class="card"><div class="today-top"><div><span class="kicker">MODULE 2 · MUSCULOSKELETAL (MSK)</span><h2>🧠 Academic Daily Quests</h2><p class="hint">Old Anki = Module 1. Current material = Module 2 (MSK).</p></div><button type="button" class="button small outline" data-action="academic-plan">'+(showAcademicEditor?'Close planner':'Customize this day')+'</button></div>'+
+ (showAcademicEditor?'<div class="academic-plan-editor"><p class="hint">Choose which academic quests belong on '+escape(pretty(selected))+'. These are planning switches, not completion checkboxes. Your choices save to this browser.</p><div class="academic-plan-options">'+[
+  ['oldAnki','Old Module 1 Anki'],
+  ['lectures','Current MSK lectures'],
+  ['currentAnki','Current MSK Anki'],
+  ['practice','MSK lecture practice questions'],
+  ['organize','Organize next week’s Anki decks']
+ ].map(([key,label])=>'<label class="academic-plan-option"><input type="checkbox" data-academic-plan="'+key+'" '+(academicPlan[key]?'checked':'')+'><span>'+escape(label)+'</span></label>').join('')+'</div><button type="button" class="button small outline" data-action="academic-reset">Reset to weekly defaults</button></div>':'')+
+ '<div class="quest-list" style="margin-top:16px">'+
+ (academicPlan.oldAnki?check('Old Anki · Module 1','anki',20,'Complete due Module 1 reviews'):'')+
+ (academicPlan.lectures?check('Complete current MSK lectures','lecturesComplete',25,'Finish the planned lecture content for today'):'')+
+ (academicPlan.currentAnki?check('Current Anki · Module 2 MSK','currentAnki',20,'Complete cards for today’s MSK lectures'):'')+
+ (academicPlan.practice?check('MSK lecture practice questions','review',15,'Practice for current lectures — no question count required'):'')+
+ (academicPlan.organize?check('Organize next week’s Anki decks','organizeAnki',15,'Prepare your next week’s cards and deck organization'):'')+
  (quizScheduled?check('Pass Friday quiz','quiz',50,'Only appears on Friday'):'')+
- '</div><div class="divider"></div><div class="fields three">'+field('Study hours','studyHours','Total today',.25)+field('Anki cards completed','ankiCards','Total today')+field('Practice questions','practiceQuestions','Optional')+'</div><div class="divider"></div><div class="fields">'+field('Lectures planned','lecturesPlanned')+field('Lectures completed','lecturesDone')+'</div><p class="hint" style="margin-top:8px">+25 XP when your nonzero planned lecture target is completed.</p>'+examBoss+'</section>'+
+ '</div><div class="divider"></div>'+
+ '<div class="fields">'+field('Study hours','studyHours','Total today',.25)+field('Anki cards completed (old + current)','ankiCards','Total today')+'</div>'+
+ (academicPlan.lectures?'<div class="fields" style="margin-top:12px">'+field('MSK lectures planned (optional)','lecturesPlanned')+field('MSK lectures completed (optional)','lecturesDone')+'</div><p class="hint" style="margin-top:8px">Lecture XP awards once when you check completion or reach your planned count.</p>':'')+
+ '<p class="hint" style="margin-top:12px">Usual rhythm: Mon–Wed full MSK routine · Thu customizable · Fri old Anki and next-week deck prep · Sat–Sun old Anki only. Turn on additional quests when you want to get ahead.</p>'+examBoss+'</section>'+
  todayBossCard+
  (gymCard||runningCard||recoveryCard?
  '<div class="quest-day-specific">'+gymCard+runningCard+recoveryCard+'</div>':
@@ -212,13 +240,15 @@ document.addEventListener('click',e=>{
  const v=e.target.closest('[data-view]');if(v){setView(v.dataset.view);return}
  const statBtn=e.target.closest('[data-stats-action]');if(statBtn&&window.HUNTER_STATS){const redraw=window.HUNTER_STATS.change(statBtn.dataset.statsAction,statBtn.dataset.statsValue,statsContext());if(redraw)render();return}
  const d=e.target.closest('[data-day]');if(d){activeDay=d.dataset.day;render();return}
- const jump=e.target.closest('[data-go-date]');if(jump){selected=jump.dataset.goDate;showExamBosses=false;setView('quests');return}
+ const jump=e.target.closest('[data-go-date]');if(jump){selected=jump.dataset.goDate;showExamBosses=false;showAcademicEditor=false;setView('quests');return}
  const b=e.target.closest('[data-action]');if(!b)return;
  switch(b.dataset.action){
+ case 'academic-plan':showAcademicEditor=!showAcademicEditor;render();break;
+ case 'academic-reset':{const entry={...get(selected)};delete entry.academicPlan;state.entries[selected]=entry;save();render();notify('Academic plan reset to weekly defaults');break}
  case 'exam-boss':showExamBosses=!showExamBosses;render();break;
  case 'quests':case 'training':setView(b.dataset.action);break;
- case 'prev':selected=dateShift(selected,-1);if(selected<START)selected=START;showExamBosses=false;render();break;
- case 'next':selected=dateShift(selected,1);showExamBosses=false;render();break;
+ case 'prev':selected=dateShift(selected,-1);if(selected<START)selected=START;showExamBosses=false;showAcademicEditor=false;render();break;
+ case 'next':selected=dateShift(selected,1);showExamBosses=false;showAcademicEditor=false;render();break;
  case 'claim15k':
  if(state.bonuses.some(x=>x.id==='first15k'))return;
  if(confirm('Did you complete your FIRST 15K run? This awards +200 XP exactly once.')){state.bonuses.push({id:'first15k',date:selected,xp:200,title:'Distance Breaker'});save();render();notify('+200 XP · DISTANCE BREAKER UNLOCKED!')}break;
@@ -232,9 +262,11 @@ document.addEventListener('click',e=>{
 document.addEventListener('change',e=>{
  if(e.target.id==='stats-metric'&&window.HUNTER_STATS){window.HUNTER_STATS.change('metric',e.target.value,statsContext());render();return}
  if(e.target.id==='stats-focus'&&window.HUNTER_STATS){window.HUNTER_STATS.change('focus',e.target.value,statsContext());render();return}
- if(e.target.id==='quest-date'){if(e.target.value&&e.target.value>=START){selected=e.target.value;showExamBosses=false;render()}return}
+ if(e.target.id==='quest-date'){if(e.target.value&&e.target.value>=START){selected=e.target.value;showExamBosses=false;showAcademicEditor=false;render()}return}
  if(e.target.id==='rank-select'){state.rank=e.target.value;save();render();return}
  const key=e.target.dataset.target;if(key){state.targets[key]=n(e.target.value);save();render();return}
+ const academicKey=e.target.dataset.academicPlan;
+ if(academicKey!==undefined){const valid=['oldAnki','lectures','currentAnki','practice','organize'];if(valid.includes(academicKey)){const entry={...get(selected)};entry.academicPlan={...academicsFor(selected,entry),[academicKey]:e.target.checked};state.entries[selected]=entry;save();render();}return}
  const lift=e.target.dataset.liftItem;
  if(lift!==undefined){const entry={...get(selected)},items={...(entry.liftItems||{})};items[lift]=e.target.checked;entry.liftItems=items;state.entries[selected]=entry;save();render();return}
  const k=e.target.dataset.field;
