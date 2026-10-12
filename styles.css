@@ -48,3 +48,14 @@
 .boss-card .quest{border-color:#4d467e}
 @media(max-width:1000px){.boss-event-list{grid-template-columns:1fr}}
 @media(max-width:520px){.boss-event{padding:11px;gap:7px}.boss-event-main strong{font-size:12px}.boss-event-main small{font-size:10px}.boss-event-side .tag{font-size:9px;padding:3px 6px}}
+
+
+/* V6 • Flexible Module 2 study planner */
+.academic-plan-editor{margin-top:15px;padding:14px 16px;background:linear-gradient(130deg,#1b1e3b,#121932);border:1px solid #50518b;border-radius:13px}
+.academic-plan-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:13px 0 15px}
+.academic-plan-option{display:flex;align-items:center;gap:9px;background:#10182e;border:1px solid #334363;border-radius:11px;padding:12px;color:#dae7ff;font-size:13px;cursor:pointer}
+.academic-plan-option input{width:17px;height:17px;accent-color:#9b75ff;flex:0 0 auto}
+.academic-plan-option:has(input:checked){border-color:#7155b7;background:#241f44}
+.academic-plan-option:hover{border-color:#9a7bcb}
+@media(max-width:800px){.academic-plan-options{grid-template-columns:1fr}}
+@media(max-width:600px){.academic-plan-editor{padding:12px}.academic-plan-option{padding:10px;font-size:12px}}
