@@ -143,6 +143,31 @@ const defaultAcademics=d=>{
 const academicsFor=(d,e)=>({...defaultAcademics(d),...((e.academicPlan&&typeof e.academicPlan==='object')?e.academicPlan:{})});
 let showAcademicEditor=false;
 
+let showHealthImporter=false;
+const healthFields=['steps','activeCalories','exerciseMinutes','walkingRunningKm'];
+const parseHealthImport=text=>{
+ const obj=JSON.parse(text);
+ if(!obj||typeof obj!=='object'||Array.isArray(obj)||!(/^\d{4}-\d{2}-\d{2}$/).test(obj.date)||Number.isNaN(Date.parse(obj.date+'T12:00:00Z'))||obj.date<START||obj.date>now())throw Error('Include a valid date between System start and today');
+ const data={};
+ for(const k of healthFields)if(Object.prototype.hasOwnProperty.call(obj,k)){
+  if(typeof obj[k]!=='number'||!Number.isFinite(obj[k])||obj[k]<0||obj[k]>1000000)throw Error('Invalid number for '+k);
+  data[k]=Math.round(obj[k]*1000)/1000;
+ }
+ if(!Object.keys(data).length)throw Error('No Health metrics provided');
+ return {date:obj.date,data};
+};
+const healthCard=e=>{
+ const value=k=>e[k]===undefined?'Not logged':Number(e[k]).toLocaleString('en-US',{maximumFractionDigits:2});
+ const field=(name,k,step=1)=>'<label class="field"><span>'+name+'</span><input type="number" min="0" step="'+step+'" data-field="'+k+'" value="'+escape(e[k]??'')+'" placeholder="From Apple Health"></label>';
+ return '<section class="card"><div class="today-top"><div><span class="kicker">⌚ PRIVATE ACTIVITY TRACKING</span><h2>Daily Health Snapshot</h2></div><button type="button" class="button small outline" data-action="toggle-health-import">'+(showHealthImporter?'Close import':'Paste Health snapshot')+'</button></div>'+
+ '<p class="hint">Active calories burned are separate from calories eaten. Walking + running distance includes everyday walking; it does not count as an individual run.</p>'+
+ '<div class="grid four" style="margin-top:13px">'+stat('Steps',value('steps'),'From Apple Health')+stat('Active energy',value('activeCalories')+' kcal','Burned')+stat('Exercise time',value('exerciseMinutes')+' min','Active minutes')+stat('Walk + run',e.walkingRunningKm===undefined?'Not logged':kmText(e.walkingRunningKm),'Total combined distance')+'</div>'+
+ '<div class="fields three" style="margin-top:14px">'+field('Active energy burned (kcal)','activeCalories')+field('Exercise minutes','exerciseMinutes')+field('Walk + run distance (km)','walkingRunningKm',.001)+'</div>'+
+ (showHealthImporter?'<div class="health-import-panel"><p class="hint">Paste a JSON snapshot from ChatGPT. Only its Health values will be merged into that date; your Anki, workout, and other progress remain unchanged.</p><label class="field"><span>Private Health snapshot</span><textarea id="health-import-text" rows="6" placeholder=\'{"date":"YYYY-MM-DD","steps":0,"activeCalories":0,"exerciseMinutes":0,"walkingRunningKm":0}\'></textarea></label><button type="button" class="button small" data-action="apply-health-import">Import snapshot</button></div>':'')+
+ '</section>';
+};
+
+
 const questsHtml=()=>{
  const e=get(selected),weekday=day(selected),schedule=(DATA.schedule||{})[weekday]||'';
  const academicPlan=academicsFor(selected,e);
@@ -205,7 +230,8 @@ const questsHtml=()=>{
  (gymCard||runningCard||recoveryCard?
  '<div class="quest-day-specific">'+gymCard+runningCard+recoveryCard+'</div>':
  '<div class="note"><strong>Recovery-focused day.</strong> No gym, run, or BJJ is scheduled. Your daily quests and recovery still count.</div>')+
- '<section class="card"><h2>⚔️ Daily training & movement</h2><div class="quest-list">'+check('Mobility','mobility',10,'10–15 min')+(gymScheduled?check('New strength PR','pr',10,'Only if you set a PR during today’s lift'):'')+'</div><div class="fields" style="margin-top:12px">'+(gymScheduled?field('Gym time (minutes)','gymMinutes','Optional'):'')+field('Mobility time (minutes)','mobilityMinutes','Optional')+'</div></section>'+
+ healthCard(e)+
+ '<section class="card"><h2>⚔️ Daily training & movement</h2><div class="quest-list">'+check('Mobility','mobility',10,'10–15 min')+(gymScheduled?check('New strength PR','pr',10,'Only if you set a PR during today’s lift'):'')+'</div>'+(gymScheduled?'<div class="fields" style="margin-top:12px">'+field('Gym time (minutes)','gymMinutes','Optional')+'</div>':'')+'</section>'+
  '<div class="grid two"><section class="card"><h2>🥊 OPM Challenge</h2><p class="hint">100 pushups · 100 sit-ups · 100 burpees. Count sets across the day. Modify or rest when needed.</p><div class="fields three" style="margin-top:14px">'+field('Pushups','pushups','0–100+')+field('Sit-ups','situps','0–100+')+field('Burpees','burpees','0–100+')+'</div><div class="divider"></div>'+field('Steps','steps','10,000 goal')+'</section>'+
  '<section class="card"><h2>🌙 Nutrition & Recovery</h2><p class="hint">Provisional target '+format(state.targets.calories)+' kcal · '+format(state.targets.protein)+'g protein. No bonus for under-eating.</p><div class="fields three" style="margin-top:14px">'+field('Calories','calories','',1)+field('Protein (g)','protein','',1)+field('Carbs (g)','carbs','',1)+field('Fat (g)','fat','',1)+'</div><div class="divider"></div><div class="fields">'+field('Hours slept','sleepHours','Optional',.25)+'</div><div class="divider"></div><div class="quest-list">'+check('Sleep plan followed','sleep',15)+check('Daily planning','planning',10)+check('Recovery override','recovery',15,'Modify training or rest responsibly')+'</div></section></div>'+
  '<section class="card"><h2>Daily notes</h2><label class="field"><span>How did today go?</span><textarea data-field="notes" rows="3" placeholder="Progress, energy, recovery, coursework…">'+escape(e.notes||'')+'</textarea></label><p class="hint" style="margin-top:10px">Changes are saved in this browser automatically after you finish editing a field.</p></section></div>';
@@ -243,6 +269,18 @@ document.addEventListener('click',e=>{
  const jump=e.target.closest('[data-go-date]');if(jump){selected=jump.dataset.goDate;showExamBosses=false;showAcademicEditor=false;setView('quests');return}
  const b=e.target.closest('[data-action]');if(!b)return;
  switch(b.dataset.action){
+ case 'toggle-health-import':showHealthImporter=!showHealthImporter;render();break;
+ case 'apply-health-import':{
+  try{
+   const {date,data}=parseHealthImport(document.getElementById('health-import-text').value);
+   const old=get(date);
+   const conflicts=Object.keys(data).filter(k=>old[k]!==undefined&&old[k]!==data[k]);
+   if(conflicts.length&&!confirm('Overwrite existing Health metrics ('+conflicts.join(', ')+') for '+pretty(date)+'? Other progress is kept.'))break;
+   state.entries[date]={...old,...data};
+   selected=date;save();showHealthImporter=false;render();notify('Health snapshot saved privately');
+  }catch(err){alert('Health import failed: '+err.message)}
+  break;
+ }
  case 'academic-plan':showAcademicEditor=!showAcademicEditor;render();break;
  case 'academic-reset':{const entry={...get(selected)};delete entry.academicPlan;state.entries[selected]=entry;save();render();notify('Academic plan reset to weekly defaults');break}
  case 'exam-boss':showExamBosses=!showExamBosses;render();break;
