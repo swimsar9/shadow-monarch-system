@@ -4,8 +4,8 @@ window.HUNTER_STATS=(()=>{
 let scope='week',metric='runKm',focus='';
 const categories={
  'Study':[['studyHours','Study hours','h'],['ankiCards','Anki cards',''],['lecturesDone','MSK lectures completed',''],['lecturesComplete','MSK lecture completion days',''],['currentAnki','Current MSK Anki days',''],['organizeAnki','Anki deck organization days','']],
- 'Running & Training':[['runKm','Running distance (km + mi)','km'],['runMi','Running distance (miles)','mi'],['runMinutes','Running time','min'],['gymMinutes','Gym time','min'],['bjjMinutes','BJJ time','min'],['mobilityMinutes','Mobility time','min'],['gym','Gym days',''],['run','Run days',''],['bjj','BJJ days',''],['mobility','Mobility days','']],
- 'OPM Challenge & Steps':[['pushups','Pushups','reps'],['situps','Sit-ups','reps'],['burpees','Burpees','reps'],['steps','Steps','steps']],
+ 'Running & Training':[['runKm','Running distance (km + mi)','km'],['runMi','Running distance (miles)','mi'],['runMinutes','Running time','min'],['gymMinutes','Gym time','min'],['bjjMinutes','BJJ time','min'],['gym','Gym days',''],['run','Run days',''],['bjj','BJJ days',''],['mobility','Mobility days','']],
+ 'OPM Challenge & Steps':[['pushups','Pushups','reps'],['situps','Sit-ups','reps'],['burpees','Burpees','reps'],['steps','Steps','steps'],['activeCalories','Active calories burned','kcal'],['exerciseMinutes','Exercise time','min'],['walkingRunningKm','Walking + running distance','km']],
  'Recovery & Nutrition':[['sleepHours','Sleep hours','h'],['calories','Calories','kcal'],['protein','Protein','g'],['carbs','Carbs','g'],['fat','Fat','g'],['sleep','Sleep-plan days',''],['recovery','Recovery days','']],
  'XP & Missions':[['xp','XP','XP'],['anki','Anki days',''],['quiz','Quizzes passed',''],['module','Module exams',''],['problem','Problem-solving exams',''],['anatomyPractical1','Anatomy Practical 1 passed',''],['anatomyPractical2','Anatomy Practical 2 passed',''],['review','MSK practice-question days',''],['planning','Planning days',''],['pr','Personal records','']]
 };
@@ -21,7 +21,7 @@ const plus=(d,days)=>{let x=formDate(d);x.setUTCDate(x.getUTCDate()+days);return
 const nice=(d,short=false)=>formDate(d).toLocaleDateString('en-US',{timeZone:'UTC',year:short?undefined:'numeric',month:'short',day:'numeric'});
 const mon=d=>plus(d,-((formDate(d).getUTCDay()+6)%7));
 const val=(e,key,date,xpFor)=>key==='xp'?num(xpFor(e,date).xp):key==='runMi'?num(e.runKm)*KM_TO_MI:boolKeys.has(key)?(e[key]===true?1:0):num(e[key]);
-const disp=(v,key)=>key==='runKm'?fmt(v,2)+' km / '+fmt(v*KM_TO_MI,2)+' mi':fmt(v,['studyHours','runMi','sleepHours'].includes(key)?2:0)+(info[key]?.[2]?' '+info[key][2]:'');
+const disp=(v,key)=>key==='walkingRunningKm'?fmt(v,2)+' km / '+fmt(v*KM_TO_MI,2)+' mi':key==='runKm'?fmt(v,2)+' km / '+fmt(v*KM_TO_MI,2)+' mi':fmt(v,['studyHours','runMi','sleepHours'].includes(key)?2:0)+(info[key]?.[2]?' '+info[key][2]:'');
 const bounds=ctx=>{
  const f=focus||ctx.selected||ctx.start;
  if(scope==='day')return{a:f,b:f,title:nice(f)};
@@ -46,8 +46,8 @@ const details=s=>{
  const t=s.totals;
  return '<div class="analytics-categories">'+
  section('🧠 Academics',line('Study time',disp(t.studyHours,'studyHours'))+line('Anki cards',fmt(t.ankiCards))+line('Old Module 1 Anki days',fmt(t.anki))+line('Current MSK Anki days',fmt(t.currentAnki))+line('MSK lectures completed',fmt(t.lecturesDone))+line('MSK lecture-completion days',fmt(t.lecturesComplete))+line('MSK practice-question days',fmt(t.review))+line('Deck organization days',fmt(t.organizeAnki))+line('Quizzes passed',fmt(t.quiz))+line('Anatomy practicals passed',fmt(t.anatomyPractical1+t.anatomyPractical2))+line('Module / problem exams',fmt(t.module)+' / '+fmt(t.problem)))+
- section('🏃 Running & Training',line('Distance',disp(t.runKm,'runKm'))+line('Run sessions',fmt(t.run))+line('Running time',fmt(t.runMinutes)+' min')+line('Gym sessions',fmt(t.gym))+line('Gym time',fmt(t.gymMinutes)+' min')+line('BJJ sessions / time',fmt(t.bjj)+' / '+fmt(t.bjjMinutes)+' min')+line('Mobility days / time',fmt(t.mobility)+' / '+fmt(t.mobilityMinutes)+' min'))+
- section('🥊 OPM Challenge & Steps',line('Pushups',fmt(t.pushups))+line('Sit-ups',fmt(t.situps))+line('Burpees',fmt(t.burpees))+line('Total reps',fmt(t.pushups+t.situps+t.burpees))+line('Total steps',fmt(t.steps))+line('10K step days',fmt(s.rows.filter(([,e])=>num(e.steps)>=10000).length)))+
+ section('🏃 Running & Training',line('Distance',disp(t.runKm,'runKm'))+line('Run sessions',fmt(t.run))+line('Running time',fmt(t.runMinutes)+' min')+line('Gym sessions',fmt(t.gym))+line('Gym time',fmt(t.gymMinutes)+' min')+line('BJJ sessions / time',fmt(t.bjj)+' / '+fmt(t.bjjMinutes)+' min')+line('Mobility days',fmt(t.mobility)))+
+ section('🥊 OPM Challenge & Steps',line('Pushups',fmt(t.pushups))+line('Sit-ups',fmt(t.situps))+line('Burpees',fmt(t.burpees))+line('Total reps',fmt(t.pushups+t.situps+t.burpees))+line('Total steps',fmt(t.steps))+line('Active calories burned',fmt(t.activeCalories)+' kcal')+line('Exercise time',fmt(t.exerciseMinutes)+' min')+line('Total walk + run distance',disp(t.walkingRunningKm,'walkingRunningKm'))+line('10K step days',fmt(s.rows.filter(([,e])=>num(e.steps)>=10000).length)))+
  section('🌙 Nutrition & Recovery',line('Average calories (recorded days)',s.averages.calories===null?'—':fmt(s.averages.calories)+' kcal')+line('Average protein (recorded days)',s.averages.protein===null?'—':fmt(s.averages.protein)+' g')+line('Average hours slept',s.averages.sleepHours===null?'—':fmt(s.averages.sleepHours,1)+' h')+line('Sleep-plan days',fmt(t.sleep))+line('Recovery overrides',fmt(t.recovery))+line('Planning days',fmt(t.planning)))+
  '</div>';
 };
@@ -94,7 +94,7 @@ const dashboard=ctx=>{
 };
 const daily=e=>'<section class="card"><div class="today-top"><h2>📊 Daily Stats Snapshot</h2><button class="button small outline" data-view="stats">Weekly & Monthly ↗</button></div><div class="divider"></div><div class="grid four">'+stat('Study Hours','Today',disp(num(e.studyHours),'studyHours'),'purple')+stat('Anki Cards','Today',fmt(num(e.ankiCards)))+stat('Run Distance','Today',disp(num(e.runKm),'runKm'),'green')+stat('OPM Reps','Today',fmt(num(e.pushups)+num(e.situps)+num(e.burpees)),'gold')+'</div></section>';
 const exportCsv=ctx=>{
- const keys=['date','studyHours','ankiCards','lecturesPlanned','lecturesDone','lecturesComplete','currentAnki','organizeAnki','runKm','runMi','runMinutes','gym','gymMinutes','run','bjj','bjjMinutes','mobility','mobilityMinutes','pushups','situps','burpees','steps','calories','protein','carbs','fat','sleepHours','sleep','recovery','anki','review','planning','pr','quiz','module','problem','anatomyPractical1','anatomyPractical2','xp','notes'];
+ const keys=['date','studyHours','ankiCards','lecturesPlanned','lecturesDone','lecturesComplete','currentAnki','organizeAnki','runKm','runMi','runMinutes','gym','gymMinutes','run','bjj','bjjMinutes','mobility','pushups','situps','burpees','steps','activeCalories','exerciseMinutes','walkingRunningKm','calories','protein','carbs','fat','sleepHours','sleep','recovery','anki','review','planning','pr','quiz','module','problem','anatomyPractical1','anatomyPractical2','xp','notes'];
  const quoted=x=>'"'+String(x??'').replace(/"/g,'""')+'"';
  const lines=[keys.map(quoted).join(',')];for(const [d,e] of Object.entries(ctx.entries).filter(([d])=>d>=ctx.start).sort(([a],[b])=>a.localeCompare(b))){
  lines.push(keys.map(k=>quoted(k==='date'?d:k==='xp'?ctx.xpFor(e,d).xp:k==='runMi'?(num(e.runKm)*KM_TO_MI).toFixed(2):e[k]===true?1:e[k]===false?0:e[k]??'')).join(','))}
