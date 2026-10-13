@@ -59,3 +59,10 @@
 .academic-plan-option:hover{border-color:#9a7bcb}
 @media(max-width:800px){.academic-plan-options{grid-template-columns:1fr}}
 @media(max-width:600px){.academic-plan-editor{padding:12px}.academic-plan-option{padding:10px;font-size:12px}}
+
+
+/* V7 • Private Apple Health snapshot importing */
+.health-import-panel{padding:14px 16px;border:1px solid #525b95;border-radius:12px;background:linear-gradient(145deg,#19233f,#11172b);margin-top:15px;display:grid;gap:12px}
+.health-import-panel textarea{width:100%;min-height:130px;resize:vertical;padding:12px;font-family:ui-monospace,Consolas,monospace;color:#e7e6ff;background:#0d1225;border:1px solid #384369;border-radius:10px;line-height:1.45}
+.health-import-panel .button{justify-self:start}
+@media(max-width:540px){.health-import-panel{padding:11px}.health-import-panel textarea{font-size:12px}}
