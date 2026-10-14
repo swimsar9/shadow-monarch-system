@@ -22,7 +22,8 @@ window.SYSTEM_DATA = {
     '2026-10-14': {gymDay:'Tuesday',run:false,label:'Back & Core (shifted)'},
     '2026-10-15': {gymDay:'Wednesday',run:false,label:'Glutes & Quads (shifted)'},
     '2026-10-16': {gymDay:'Thursday',run:false,label:'Chest & Core (shifted)'},
-    '2026-10-17': {gymDay:'Friday',run:true,optionalGym:true,label:'Glutes & Hamstrings (optional) / Long Run (if recovered)'}
+    '2026-10-17': {gymDay:'Friday',run:true,optionalGym:true,label:'Glutes & Hamstrings (optional) / Long Run (if recovered)'},
+    '2026-12-10': {run:false,label:'Chest & Core / Module Exam · Skip run'}
   },
   running: [
     [13,'Oct 12','Rest — Anatomy Lab','Rest — Study week','6–8K easy or rest','Academic adjustment · no make-up runs; choose run OR leg workout on Saturday'],
@@ -33,7 +34,7 @@ window.SYSTEM_DATA = {
     [18,'Nov 16','6K incl. 4 × 3-min intervals','5K easy','12K','Respect Friday fatigue'],
     [19,'Nov 23','4K easy + strides','4K easy','10K','Recovery week'],
     [20,'Nov 30','6K incl. 3 × 7-min tempo','5K easy','12K','Steady endurance'],
-    [21,'Dec 7','4K easy or rest','Rest or 3K relaxed','10–12K easy','Problem-solving + module exam week · prioritize recovery'],
+    [21,'Dec 7','4K easy or rest','Rest — Module Exam','10–12K easy','Problem-solving + module exam week · prioritize recovery'],
     [22,'Dec 14','5K easy + optional tempo','4–5K easy','13–14K','Return gradually after exam week'],
     [23,'Dec 21','4K easy + strides','3K easy or rest','15K','Dec 26 goal · attempt only if recovered and prepared']
   ],
