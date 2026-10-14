@@ -19,6 +19,9 @@ const get=d=>state.entries[d]||{};
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({entries:state.entries,bonuses:state.bonuses,rank:state.rank,targets:state.targets}))}catch{notify('Storage unavailable; export a backup')}}; 
 const notify=msg=>{const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>el.classList.remove('show'),3000)};
 const flag=(e,key)=>!!e[key],count=(e,k)=>n(e[k]);
+const trainingOverride=d=>(DATA.trainingOverrides||{})[d]||null;
+const gymDayFor=d=>{const o=trainingOverride(d);return o&&Object.prototype.hasOwnProperty.call(o,'gymDay')?o.gymDay:day(d)};
+const scheduleFor=d=>trainingOverride(d)?.label||(DATA.schedule||{})[day(d)]||'';
 const xpFor=(e,d)=>{
  let v=0,lines=[];const add=(name,x)=>{if(x>0){v+=x;lines.push([name,x])}};
  const weekday=day(d);
@@ -27,7 +30,8 @@ const xpFor=(e,d)=>{
  add('Current MSK lectures',flag(e,'lecturesComplete')||(count(e,'lecturesPlanned')>0&&count(e,'lecturesDone')>=count(e,'lecturesPlanned'))?25:0);
  add('MSK lecture practice questions',flag(e,'review')?15:0);
  add('Organize next week’s Anki decks',flag(e,'organizeAnki')?15:0);
- add('Strength workout',flag(e,'gym')&&['Monday','Tuesday','Wednesday','Thursday','Friday'].includes(weekday)?30:0);
+ add('Anatomy lab completed',flag(e,'anatomyLab')?40:0);
+ add('Strength workout',flag(e,'gym')&&!!(DATA.gym||{})[gymDayFor(d)]?30:0);
  add('Run',flag(e,'run')?weekday==='Saturday'?35:['Tuesday','Thursday'].includes(weekday)?25:0:0);
  add('BJJ',flag(e,'bjj')&&weekday==='Sunday'?30:0);
  for(const [k,label] of [['pushups','Pushups'],['situps','Sit-ups'],['burpees','Burpees']]){let x=count(e,k);add(label,x>=100?10:x>=50?5:0)}
@@ -111,6 +115,7 @@ const distanceText=text=>String(text??'').replace(/(\d+(?:\.\d+)?)(?:\s*([–-])
 });
 const plannedRun=date=>{
  const weekday=day(date),slot={Tuesday:2,Thursday:3,Saturday:4}[weekday];
+ if(trainingOverride(date)?.run===false)return null;
  if(slot===undefined)return null;
  const week=currentWeek(date);
  const row=(DATA.running||[]).find(x=>Number(x[0])===week);
@@ -138,7 +143,7 @@ const upcomingBossBoard=()=>{
 /* Academic module defaults are suggestions; each day's visibility may be overridden without deleting earned XP. */
 const defaultAcademics=d=>{
  const weekday=day(d),core=['Monday','Tuesday','Wednesday'].includes(weekday);
- return {oldAnki:true,lectures:core,currentAnki:core,practice:core,organize:weekday==='Friday'};
+ return {oldAnki:true,lectures:core,currentAnki:core,practice:core,organize:weekday==='Friday',lab:weekday==='Tuesday'};
 };
 const academicsFor=(d,e)=>({...defaultAcademics(d),...((e.academicPlan&&typeof e.academicPlan==='object')?e.academicPlan:{})});
 let showAcademicEditor=false;
@@ -169,9 +174,9 @@ const healthCard=e=>{
 
 
 const questsHtml=()=>{
- const e=get(selected),weekday=day(selected),schedule=(DATA.schedule||{})[weekday]||'';
+ const e=get(selected),weekday=day(selected),schedule=scheduleFor(selected),gymDay=gymDayFor(selected),trainingNote=trainingOverride(selected);
  const academicPlan=academicsFor(selected,e);
- const gymScheduled=Object.prototype.hasOwnProperty.call(DATA.gym||{},weekday);
+ const gymScheduled=!!gymDay&&Object.prototype.hasOwnProperty.call(DATA.gym||{},gymDay);
  const runPlan=plannedRun(selected),bjjScheduled=weekday==='Sunday',quizScheduled=weekday==='Friday';
  const liftItems=(e.liftItems&&typeof e.liftItems==='object')?e.liftItems:{};
  const check=(label,k,xp,desc='')=>'<div class="quest '+(flag(e,k)?'done':'')+'"><label><input type="checkbox" data-field="'+k+'" '+(flag(e,k)?'checked':'')+'><span><strong>'+escape(label)+'</strong><small>'+escape(desc)+'</small></span></label><span class="xp-pill">+'+xp+' XP</span></div>';
@@ -179,10 +184,10 @@ const questsHtml=()=>{
  const kmValue=e.runKm??'';
  const milesValue=kmValue===''?'':Math.round(miles(kmValue)*100)/100;
  const runMilesField='<label class="field"><span>Run distance (mi)</span><input type="number" min="0" step="0.01" data-field="runMi" placeholder="Miles" value="'+milesValue+'"></label>';
- const workout=((DATA.gym||{})[weekday]||[]).filter(([exercise])=>!(/\brun$/i).test(exercise));
+ const workout=((DATA.gym||{})[gymDay]||[]).filter(([exercise])=>!(/\brun$/i).test(exercise));
  const checkedLift=workout.filter((_,i)=>!!liftItems[i]).length;
  const gymCard=gymScheduled?
- '<section class="card"><div class="today-top"><div><span class="kicker">⚔️ Today’s strength workout</span><h2>'+escape(weekday+' · '+schedule.replace(/\s*(?:\+|·)\s*Run$/,''))+'</h2></div><span class="tag">'+checkedLift+' / '+workout.length+' checked</span></div><p class="hint" style="margin:8px 0 13px">Check each exercise as you go. The full workout checkbox awards the +30 XP.</p>'+
+ '<section class="card"><div class="today-top"><div><span class="kicker">⚔️ Today’s strength workout'+(gymDay!==weekday?' · MOVED FROM '+gymDay.toUpperCase():'')+'</span><h2>'+escape(weekday+' · '+((DATA.schedule||{})[gymDay]||'').replace(/\s*(?:\+|·)\s*Run$/,''))+'</h2></div><span class="tag">'+checkedLift+' / '+workout.length+' checked</span></div><p class="hint" style="margin:8px 0 13px">'+(trainingNote?.optionalGym?'Optional: choose this workout OR the long run, rather than stacking both when fatigued. ':'')+'Check exercises as you go. The full workout checkbox awards +30 XP.</p>'+
  check('Complete '+weekday+' workout','gym',30,'Finished the planned strength session')+
  '<div class="workout-checklist">'+workout.map(([exercise,reps],i)=>'<label class="workout-step '+(liftItems[i]?'completed':'')+'"><input type="checkbox" data-lift-item="'+i+'" '+(liftItems[i]?'checked':'')+'><span>'+escape(exercise)+'</span><small>'+escape(reps)+'</small></label>').join('')+'</div></section>':'';
  const runningCard=runPlan?
@@ -210,6 +215,7 @@ const questsHtml=()=>{
  '<section class="card"><div class="today-top"><div><span class="kicker">MODULE 2 · MUSCULOSKELETAL (MSK)</span><h2>🧠 Academic Daily Quests</h2><p class="hint">Old Anki = Module 1. Current material = Module 2 (MSK).</p></div><button type="button" class="button small outline" data-action="academic-plan">'+(showAcademicEditor?'Close planner':'Customize this day')+'</button></div>'+
  (showAcademicEditor?'<div class="academic-plan-editor"><p class="hint">Choose which academic quests belong on '+escape(pretty(selected))+'. These are planning switches, not completion checkboxes. Your choices save to this browser.</p><div class="academic-plan-options">'+[
   ['oldAnki','Old Module 1 Anki'],
+  ['lab','Anatomy lab'],
   ['lectures','Current MSK lectures'],
   ['currentAnki','Current MSK Anki'],
   ['practice','MSK lecture practice questions'],
@@ -217,13 +223,14 @@ const questsHtml=()=>{
  ].map(([key,label])=>'<label class="academic-plan-option"><input type="checkbox" data-academic-plan="'+key+'" '+(academicPlan[key]?'checked':'')+'><span>'+escape(label)+'</span></label>').join('')+'</div><button type="button" class="button small outline" data-action="academic-reset">Reset to weekly defaults</button></div>':'')+
  '<div class="quest-list" style="margin-top:16px">'+
  (academicPlan.oldAnki?check('Old Anki · Module 1','anki',20,'Complete due Module 1 reviews'):'')+
+ (academicPlan.lab?check('Complete anatomy lab','anatomyLab',40,'Hands-on dissection and structure identification'):'')+
  (academicPlan.lectures?check('Complete current MSK lectures','lecturesComplete',25,'Finish the planned lecture content for today'):'')+
  (academicPlan.currentAnki?check('Current Anki · Module 2 MSK','currentAnki',20,'Complete cards for today’s MSK lectures'):'')+
  (academicPlan.practice?check('MSK lecture practice questions','review',15,'Practice for current lectures — no question count required'):'')+
  (academicPlan.organize?check('Organize next week’s Anki decks','organizeAnki',15,'Prepare your next week’s cards and deck organization'):'')+
  (quizScheduled?check('Pass Friday quiz','quiz',50,'Only appears on Friday'):'')+
  '</div><div class="divider"></div>'+
- '<div class="fields">'+field('Study hours','studyHours','Total today',.25)+field('Anki cards completed (old + current)','ankiCards','Total today')+'</div>'+
+ '<div class="fields">'+field('Study hours','studyHours','Total today',.25)+field('Anki cards completed (old + current)','ankiCards','Total today')+(academicPlan.lab?field('Anatomy lab hours','anatomyLabHours','Time in lab',.25):'')+'</div>'+
  (academicPlan.lectures?'<div class="fields" style="margin-top:12px">'+field('MSK lectures planned (optional)','lecturesPlanned')+field('MSK lectures completed (optional)','lecturesDone')+'</div><p class="hint" style="margin-top:8px">Lecture XP awards once when you check completion or reach your planned count.</p>':'')+
  '<p class="hint" style="margin-top:12px">Usual rhythm: Mon–Wed full MSK routine · Thu customizable · Fri old Anki and next-week deck prep · Sat–Sun old Anki only. Turn on additional quests when you want to get ahead.</p>'+examBoss+'</section>'+
  todayBossCard+
@@ -246,11 +253,11 @@ const dashboard=()=>{const t=total(),l=lvFor(t),e=get(selected),recent=dailyReco
  '<div class="grid four">'+stat('Level',l.level,'Next level in '+format(l.need-l.remaining)+' XP')+stat('Quests logged',dailyRecords().filter(a=>a.xp>0).length,'Days with earned XP','purple')+stat('Gym sessions',sum('gym'),'Mon–Fri strength','green')+stat('Runs logged',sum('run'),'Tue · Thu · Sat','gold')+'</div>'+
  '<div class="note"><strong>Season '+thisYear+':</strong> '+format(seasonXP)+' XP this calendar year · Your lifetime XP and all achievements carry forward forever.</div>'+
  upcomingBossBoard()+
- '<div class="grid two"><section class="card"><div class="today-top"><h2>Today’s Quest Board</h2>'+button('Open Quest Log ↗','quests','small')+'</div><div class="divider"></div><div class="metric"><span>Current date</span><strong>'+escape(pretty(selected))+'</strong></div><div class="metric"><span>Training</span><strong>'+escape(DATA.schedule?.[day(selected)]||'')+'</strong></div><div class="metric"><span>Earned XP</span><strong class="good">'+xpFor(e,selected).xp+'</strong></div><p class="hint" style="margin-top:12px">Daily quests and XP are reported by you, not automatically synced with Apple Health or Google Calendar.</p></section>'+
+ '<div class="grid two"><section class="card"><div class="today-top"><h2>Today’s Quest Board</h2>'+button('Open Quest Log ↗','quests','small')+'</div><div class="divider"></div><div class="metric"><span>Current date</span><strong>'+escape(pretty(selected))+'</strong></div><div class="metric"><span>Training</span><strong>'+escape(scheduleFor(selected))+'</strong></div><div class="metric"><span>Earned XP</span><strong class="good">'+xpFor(e,selected).xp+'</strong></div><p class="hint" style="margin-top:12px">Daily quests and XP are reported by you, not automatically synced with Apple Health or Google Calendar.</p></section>'+
  '<section class="card"><h2>'+(postGate?'The Endless Ascent':'Road to 15K')+'</h2><p class="hint">'+(postGate?'Repeatable training seasons · More boss fights ahead':'11-week running arc · Starts Oct 12, 2026 · Target Dec 26')+'</p><div class="divider"></div><div class="metric"><span>Tuesday</span><strong>Quality / Tempo</strong></div><div class="metric"><span>Thursday</span><strong>Easy aerobic</strong></div><div class="metric"><span>Saturday</span><strong>Long run</strong></div><p class="hint" style="margin-top:11px">Training continues into future years. Repeat easy/build/recovery cycles and choose a new race target when ready.</p>'+button('See running plan','training','small outline')+'</section></div>'+
- (window.HUNTER_STATS?window.HUNTER_STATS.dashboard(statsContext()):'')+'<section class="card"><h2>Recent Hunter Reports</h2>'+(recent.length?'<div class="scroll"><table class="data-table"><thead><tr><th>Date</th><th>Focus</th><th>XP</th></tr></thead><tbody>'+recent.map(x=>'<tr><td>'+escape(pretty(x.date))+'</td><td>'+escape(DATA.schedule?.[day(x.date)]||'')+'</td><td><span class="xp-pill">+'+x.xp+'</span></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No official XP logged yet. Start with your first quest board!</div>')+'</section></div>';
+ (window.HUNTER_STATS?window.HUNTER_STATS.dashboard(statsContext()):'')+'<section class="card"><h2>Recent Hunter Reports</h2>'+(recent.length?'<div class="scroll"><table class="data-table"><thead><tr><th>Date</th><th>Focus</th><th>XP</th></tr></thead><tbody>'+recent.map(x=>'<tr><td>'+escape(pretty(x.date))+'</td><td>'+escape(scheduleFor(x.date))+'</td><td><span class="xp-pill">+'+x.xp+'</span></td></tr>').join('')+'</tbody></table></div>':'<div class="empty">No official XP logged yet. Start with your first quest board!</div>')+'</section></div>';
 };
-const training=()=>{const g=DATA.gym||{},r=DATA.running||[];return '<div class="stack"><div class="note"><strong>ROAD TO 15K:</strong> Runs Tuesday (quality), Thursday (easy) and Saturday (long). Recovery weeks are built in. Reduce Friday leg volume before long runs if needed.</div><section class="card"><h2>11-Week Running Plan</h2><div class="scroll"><table class="data-table"><thead><tr><th>Med Week</th><th>Starts</th><th>Tuesday</th><th>Thursday</th><th>Saturday</th><th>Notes</th></tr></thead><tbody>'+r.map(x=>'<tr class="week-row '+(/recovery/i.test(x[5]||'')?'recovery':'')+'"><td class="week-label">'+x[0]+'</td><td>'+escape(x[1])+'</td><td>'+escape(distanceText(x[2]))+'</td><td>'+escape(distanceText(x[3]))+'</td><td><strong>'+escape(distanceText(x[4]))+'</strong></td><td>'+escape(x[5]||'')+'</td></tr>').join('')+'</tbody></table></div><p class="hint">Intervals include warm-up, jog recoveries and cooldown. Keep easy runs conversational. 15K goal is flexible.</p></section><section class="card"><div class="today-top"><h2>♾ Season Two & Beyond — Repeatable Running Cycle</h2><span class="tag">NO END DATE</span></div><p class="hint" style="margin:9px 0 13px">After the first 15K arc, repeat this flexible four-week cycle or replace it with future race-specific blocks. The 15K finish date is a milestone, not a reset.</p><div class="scroll"><table class="data-table"><thead><tr><th>Cycle</th><th>Tuesday quality</th><th>Thursday easy</th><th>Saturday long</th><th>Focus</th></tr></thead><tbody>'+(DATA.ongoingRunning||[]).map(x=>'<tr><td class="week-label">'+escape(x[0])+'</td><td>'+escape(distanceText(x[1]))+'</td><td>'+escape(distanceText(x[2]))+'</td><td>'+escape(distanceText(x[3]))+'</td><td>'+escape(x[4])+'</td></tr>').join('')+'</tbody></table></div><p class="hint" style="margin-top:12px">Distances are suggestions, not requirements. Repeat recovery weeks, shorten runs during exam periods, and work toward any new distance you choose.</p></section><section class="card"><h2>Gym Program</h2><div class="day-tabs">'+Object.keys(g).map(d=>'<button data-day="'+d+'" class="'+(activeDay===d?'active':'')+'">'+d+'</button>').join('')+'</div><h3>'+escape(activeDay)+' · '+escape(DATA.schedule?.[activeDay]||'')+'</h3><div class="divider"></div><div class="small-list">'+(g[activeDay]||[]).map(([exercise,sets])=>'<div class="small-item"><span>'+escape(exercise)+'</span><span class="muted">'+escape(sets)+'</span></div>').join('')+'</div><p class="hint" style="margin-top:15px">Warm up and stretch appropriately; training can be modified for fatigue, exams or injury.</p></section></div>'};
+const training=()=>{const g=DATA.gym||{},r=DATA.running||[];return '<div class="stack"><div class="note"><strong>ROAD TO 15K:</strong> Oct 13–17 is an anatomy-lab recovery adjustment: no Tuesday or Thursday run. Saturday long run is optional; avoid stacking it with shifted legs if tired. Regular Tuesday/Thursday runs resume Oct 20. December exam week is also lighter.</div><section class="card"><h2>Oct 13–17 · One-week Workout Adjustment</h2><div class="small-list">'+['2026-10-13','2026-10-14','2026-10-15','2026-10-16','2026-10-17'].map(d=>'<div class="small-item"><span>'+escape(pretty(d))+'</span><span class="muted">'+escape(scheduleFor(d))+'</span></div>').join('')+'</div><p class="hint">Saturday: choose legs or the easy long run based on recovery. Missing two runs this week does not need to be made up.</p></section><section class="card"><h2>11-Week Running Plan</h2><div class="scroll"><table class="data-table"><thead><tr><th>Med Week</th><th>Starts</th><th>Tuesday</th><th>Thursday</th><th>Saturday</th><th>Notes</th></tr></thead><tbody>'+r.map(x=>'<tr class="week-row '+(/recovery/i.test(x[5]||'')?'recovery':'')+'"><td class="week-label">'+x[0]+'</td><td>'+escape(x[1])+'</td><td>'+escape(distanceText(x[2]))+'</td><td>'+escape(distanceText(x[3]))+'</td><td><strong>'+escape(distanceText(x[4]))+'</strong></td><td>'+escape(x[5]||'')+'</td></tr>').join('')+'</tbody></table></div><p class="hint">Intervals include warm-up, jog recoveries and cooldown. Keep easy runs conversational. 15K goal is flexible.</p></section><section class="card"><div class="today-top"><h2>♾ Season Two & Beyond — Repeatable Running Cycle</h2><span class="tag">NO END DATE</span></div><p class="hint" style="margin:9px 0 13px">After the first 15K arc, repeat this flexible four-week cycle or replace it with future race-specific blocks. The 15K finish date is a milestone, not a reset.</p><div class="scroll"><table class="data-table"><thead><tr><th>Cycle</th><th>Tuesday quality</th><th>Thursday easy</th><th>Saturday long</th><th>Focus</th></tr></thead><tbody>'+(DATA.ongoingRunning||[]).map(x=>'<tr><td class="week-label">'+escape(x[0])+'</td><td>'+escape(distanceText(x[1]))+'</td><td>'+escape(distanceText(x[2]))+'</td><td>'+escape(distanceText(x[3]))+'</td><td>'+escape(x[4])+'</td></tr>').join('')+'</tbody></table></div><p class="hint" style="margin-top:12px">Distances are suggestions, not requirements. Repeat recovery weeks, shorten runs during exam periods, and work toward any new distance you choose.</p></section><section class="card"><h2>Gym Program</h2><div class="day-tabs">'+Object.keys(g).map(d=>'<button data-day="'+d+'" class="'+(activeDay===d?'active':'')+'">'+d+'</button>').join('')+'</div><h3>'+escape(activeDay)+' · '+escape(DATA.schedule?.[activeDay]||'')+'</h3><div class="divider"></div><div class="small-list">'+(g[activeDay]||[]).map(([exercise,sets])=>'<div class="small-item"><span>'+escape(exercise)+'</span><span class="muted">'+escape(sets)+'</span></div>').join('')+'</div><p class="hint" style="margin-top:15px">Warm up and stretch appropriately; training can be modified for fatigue, exams or injury.</p></section></div>'};
 const achievements=()=>{
  const a=DATA.achievements||[], unlocked=a.filter(x=>achieved(x[3])).length;
  return '<div class="stack"><section class="card"><div class="today-top"><div><span class="kicker">LIFETIME ACHIEVEMENTS · ALL SEASONS</span><h2>'+unlocked+' / '+a.length+' badges unlocked</h2></div><span class="tag goldtag">♾ THE ENDLESS ASCENT</span></div>'+bar(unlocked,a.length)+'<p class="hint">Achievements are earned from your existing quest logs, including in future years. Historical awards stay unlocked. New badges do not add XP, so nothing gets double-counted.</p></section><div class="badge-list">'+a.map(([name,description,emoji,kind])=>{
@@ -304,7 +311,7 @@ document.addEventListener('change',e=>{
  if(e.target.id==='rank-select'){state.rank=e.target.value;save();render();return}
  const key=e.target.dataset.target;if(key){state.targets[key]=n(e.target.value);save();render();return}
  const academicKey=e.target.dataset.academicPlan;
- if(academicKey!==undefined){const valid=['oldAnki','lectures','currentAnki','practice','organize'];if(valid.includes(academicKey)){const entry={...get(selected)};entry.academicPlan={...academicsFor(selected,entry),[academicKey]:e.target.checked};state.entries[selected]=entry;save();render();}return}
+ if(academicKey!==undefined){const valid=['oldAnki','lectures','currentAnki','practice','organize','lab'];if(valid.includes(academicKey)){const entry={...get(selected)};entry.academicPlan={...academicsFor(selected,entry),[academicKey]:e.target.checked};state.entries[selected]=entry;save();render();}return}
  const lift=e.target.dataset.liftItem;
  if(lift!==undefined){const entry={...get(selected)},items={...(entry.liftItems||{})};items[lift]=e.target.checked;entry.liftItems=items;state.entries[selected]=entry;save();render();return}
  const k=e.target.dataset.field;
