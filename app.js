@@ -149,7 +149,8 @@ const academicsFor=(d,e)=>({...defaultAcademics(d),...((e.academicPlan&&typeof e
 let showAcademicEditor=false;
 
 let showHealthImporter=false;
-const healthFields=['steps','activeCalories','exerciseMinutes','walkingRunningKm'];
+const healthFields=['steps','activeCalories','exerciseMinutes','walkingRunningKm','anatomyLabHours'];
+const snapshotFlags=['anatomyLab','anki','currentAnki'];
 const parseHealthImport=text=>{
  const obj=JSON.parse(text);
  if(!obj||typeof obj!=='object'||Array.isArray(obj)||!(/^\d{4}-\d{2}-\d{2}$/).test(obj.date)||Number.isNaN(Date.parse(obj.date+'T12:00:00Z'))||obj.date<START||obj.date>now())throw Error('Include a valid date between System start and today');
@@ -158,7 +159,11 @@ const parseHealthImport=text=>{
   if(typeof obj[k]!=='number'||!Number.isFinite(obj[k])||obj[k]<0||obj[k]>1000000)throw Error('Invalid number for '+k);
   data[k]=Math.round(obj[k]*1000)/1000;
  }
- if(!Object.keys(data).length)throw Error('No Health metrics provided');
+ for(const k of snapshotFlags)if(Object.prototype.hasOwnProperty.call(obj,k)){
+  if(typeof obj[k]!=='boolean')throw Error(k+' must be true or false');
+  data[k]=obj[k];
+ }
+ if(!Object.keys(data).length)throw Error('No activity or quest data provided');
  return {date:obj.date,data};
 };
 const healthCard=e=>{
@@ -168,7 +173,7 @@ const healthCard=e=>{
  '<p class="hint">Active calories burned are separate from calories eaten. Walking + running distance includes everyday walking; it does not count as an individual run.</p>'+
  '<div class="grid four" style="margin-top:13px">'+stat('Steps',value('steps'),'From Apple Health')+stat('Active energy',value('activeCalories')+' kcal','Burned')+stat('Exercise time',value('exerciseMinutes')+' min','Active minutes')+stat('Walk + run',e.walkingRunningKm===undefined?'Not logged':kmText(e.walkingRunningKm),'Total combined distance')+'</div>'+
  '<div class="fields three" style="margin-top:14px">'+field('Active energy burned (kcal)','activeCalories')+field('Exercise minutes','exerciseMinutes')+field('Walk + run distance (km)','walkingRunningKm',.001)+'</div>'+
- (showHealthImporter?'<div class="health-import-panel"><p class="hint">Paste a JSON snapshot from ChatGPT. Only its Health values will be merged into that date; your Anki, workout, and other progress remain unchanged.</p><label class="field"><span>Private Health snapshot</span><textarea id="health-import-text" rows="6" placeholder=\'{"date":"YYYY-MM-DD","steps":0,"activeCalories":0,"exerciseMinutes":0,"walkingRunningKm":0}\'></textarea></label><button type="button" class="button small" data-action="apply-health-import">Import snapshot</button></div>':'')+
+ (showHealthImporter?'<div class="health-import-panel"><p class="hint">Paste a private snapshot from ChatGPT. It merges only the included Health metrics and optional confirmed academic quests; everything else stays unchanged.</p><label class="field"><span>Private Health snapshot</span><textarea id="health-import-text" rows="6" placeholder=\'{"date":"YYYY-MM-DD","steps":0,"activeCalories":0,"exerciseMinutes":0,"walkingRunningKm":0}\'></textarea></label><button type="button" class="button small" data-action="apply-health-import">Import snapshot</button></div>':'')+
  '</section>';
 };
 
@@ -284,7 +289,7 @@ document.addEventListener('click',e=>{
    const conflicts=Object.keys(data).filter(k=>old[k]!==undefined&&old[k]!==data[k]);
    if(conflicts.length&&!confirm('Overwrite existing Health metrics ('+conflicts.join(', ')+') for '+pretty(date)+'? Other progress is kept.'))break;
    state.entries[date]={...old,...data};
-   selected=date;save();showHealthImporter=false;render();notify('Health snapshot saved privately');
+   selected=date;save();showHealthImporter=false;render();notify('Daily snapshot saved privately');
   }catch(err){alert('Health import failed: '+err.message)}
   break;
  }
