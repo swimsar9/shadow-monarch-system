@@ -16,8 +16,16 @@ window.SYSTEM_DATA = {
     Friday: 'Glutes & Hamstrings',
     Saturday: 'Long Run'
   },
+  // Temporary date-specific training adjustments. Original weekly schedule resumes Oct 19.
+  trainingOverrides: {
+    '2026-10-13': {gymDay:null,run:false,label:'Anatomy lab · Recovery day'},
+    '2026-10-14': {gymDay:'Tuesday',run:false,label:'Back & Core (shifted)'},
+    '2026-10-15': {gymDay:'Wednesday',run:false,label:'Glutes & Quads (shifted)'},
+    '2026-10-16': {gymDay:'Thursday',run:false,label:'Chest & Core (shifted)'},
+    '2026-10-17': {gymDay:'Friday',run:true,optionalGym:true,label:'Glutes & Hamstrings (optional) / Long Run (if recovered)'}
+  },
   running: [
-    [13,'Oct 12','4K easy + 4 strides','4K easy','8K','Ease in'],
+    [13,'Oct 12','Rest — Anatomy Lab','Rest — Study week','6–8K easy or rest','Academic adjustment · no make-up runs; choose run OR leg workout on Saturday'],
     [14,'Oct 19','5K incl. 3 × 4-min tempo','4K easy','9K','Controlled quality'],
     [15,'Oct 26','5K incl. 5 × 2-min intervals','5K easy','10K','Brisk, not all-out'],
     [16,'Nov 2','4K easy','4K easy','8K','Recovery week'],
@@ -25,9 +33,9 @@ window.SYSTEM_DATA = {
     [18,'Nov 16','6K incl. 4 × 3-min intervals','5K easy','12K','Respect Friday fatigue'],
     [19,'Nov 23','4K easy + strides','4K easy','10K','Recovery week'],
     [20,'Nov 30','6K incl. 3 × 7-min tempo','5K easy','12K','Steady endurance'],
-    [21,'Dec 7','6K incl. 5 × 3-min intervals','5–6K easy','13K','Fuel and recover'],
-    [22,'Dec 14','5K incl. 12-min tempo','4–5K easy','14K','Reduce intensity'],
-    [23,'Dec 21','4K easy + strides','3K easy or rest','15K','Dec 26 boss · only if recovered']
+    [21,'Dec 7','4K easy or rest','Rest or 3K relaxed','10–12K easy','Problem-solving + module exam week · prioritize recovery'],
+    [22,'Dec 14','5K easy + optional tempo','4–5K easy','13–14K','Return gradually after exam week'],
+    [23,'Dec 21','4K easy + strides','3K easy or rest','15K','Dec 26 goal · attempt only if recovered and prepared']
   ],
   gym: {
     Monday: [['Warmup: Stairmaster','5 min'],['Hip thrust → KAS bridges + hold','3×8–10'],['B-stance RDL','3×8–10 per side'],['Bulgarian split squat','2×10–12 per side'],['Calf extensions','3×10–12'],['Kickbacks / side kickbacks','2+2×12 per side'],['Incline treadmill','30 min, 5% at speed 3'],['Stretch and optional sauna','Cool down']],
