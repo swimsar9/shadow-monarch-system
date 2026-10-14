@@ -22,11 +22,11 @@ window.SYSTEM_DATA = {
     '2026-10-14': {gymDay:'Tuesday',run:false,label:'Back & Core (shifted)'},
     '2026-10-15': {gymDay:'Wednesday',run:false,label:'Glutes & Quads (shifted)'},
     '2026-10-16': {gymDay:'Thursday',run:false,label:'Chest & Core (shifted)'},
-    '2026-10-17': {gymDay:'Friday',run:true,optionalGym:true,label:'Glutes & Hamstrings (optional) / Long Run (if recovered)'},
+    '2026-10-17': {gymDay:null,run:true,label:'Optional Long Run / Recovery'},
     '2026-12-10': {run:false,label:'Chest & Core / Module Exam · Skip run'}
   },
   running: [
-    [13,'Oct 12','Rest — Anatomy Lab','Rest — Study week','6–8K easy or rest','Academic adjustment · no make-up runs; choose run OR leg workout on Saturday'],
+    [13,'Oct 12','Rest — Anatomy Lab','Rest — Study week','6–8K easy or rest','Academic adjustment · no make-up runs; Saturday long run optional'],
     [14,'Oct 19','5K incl. 3 × 4-min tempo','4K easy','9K','Controlled quality'],
     [15,'Oct 26','5K incl. 5 × 2-min intervals','5K easy','10K','Brisk, not all-out'],
     [16,'Nov 2','4K easy','4K easy','8K','Recovery week'],
