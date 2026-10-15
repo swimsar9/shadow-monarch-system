@@ -19,7 +19,7 @@ window.SYSTEM_DATA = {
   // Temporary date-specific training adjustments. Original weekly schedule resumes Oct 19.
   trainingOverrides: {
     '2026-10-13': {gymDay:null,run:false,label:'Anatomy lab · Recovery day'},
-    '2026-10-14': {gymDay:'Tuesday',run:false,label:'Back & Core (shifted)'},
+    '2026-10-14': {gymDay:null,run:false,label:'Recovery · No gym'},
     '2026-10-15': {gymDay:null,run:false,label:'Recovery · No gym'},
     '2026-10-16': {gymDay:'FullBody',run:false,label:'Full Body · Makeup Session'},
     '2026-10-17': {gymDay:null,run:true,label:'Optional Long Run / Recovery'},
