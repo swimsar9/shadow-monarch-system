@@ -20,8 +20,8 @@ window.SYSTEM_DATA = {
   trainingOverrides: {
     '2026-10-13': {gymDay:null,run:false,label:'Anatomy lab · Recovery day'},
     '2026-10-14': {gymDay:'Tuesday',run:false,label:'Back & Core (shifted)'},
-    '2026-10-15': {gymDay:'Wednesday',run:false,label:'Glutes & Quads (shifted)'},
-    '2026-10-16': {gymDay:'Thursday',run:false,label:'Chest & Core (shifted)'},
+    '2026-10-15': {gymDay:null,run:false,label:'Recovery · No gym'},
+    '2026-10-16': {gymDay:'FullBody',run:false,label:'Full Body · Makeup Session'},
     '2026-10-17': {gymDay:null,run:true,label:'Optional Long Run / Recovery'},
     '2026-12-10': {run:false,label:'Chest & Core / Module Exam · Skip run'}
   },
@@ -39,6 +39,7 @@ window.SYSTEM_DATA = {
     [23,'Dec 21','4K easy + strides','3K easy or rest','15K','Dec 26 goal · attempt only if recovered and prepared']
   ],
   gym: {
+    FullBody: [['Warmup: Stairmaster','5 min'],['Hip thrust → KAS bridges + hold','3×8–10'],['Leg press','3×8–10'],['RDLs','3×8–10'],['Assisted pull-ups','3×AMRAP'],['Rows','3×8–10'],['Bench press','3×8–10'],['Shoulder press','2×8–10'],['Core work','10 min'],['Stretch','Cool down']],
     Monday: [['Warmup: Stairmaster','5 min'],['Hip thrust → KAS bridges + hold','3×8–10'],['B-stance RDL','3×8–10 per side'],['Bulgarian split squat','2×10–12 per side'],['Calf extensions','3×10–12'],['Kickbacks / side kickbacks','2+2×12 per side'],['Incline treadmill','30 min, 5% at speed 3'],['Stretch and optional sauna','Cool down']],
     Tuesday: [['Warmup: Row','1,000 m'],['Assisted pull-ups','3×AMRAP'],['Lat pulldown','3×8–10'],['Rows','3×8–10'],['Face pulls','3×10–12'],['Rear-delt fly','2×8–10 per side'],['Bicep + hammer curls','2×8–10'],['Back extensions','3×8–10'],['Core work','10 min'],['Tuesday quality run','Can replace post-lift cardio']],
     Wednesday: [['Warmup: Stairmaster','5 min'],['Hamstring curls','3×8–10'],['Quad extensions','3×8–10'],['Leg press','3×8–10'],['RDLs','3×10–12'],['Hyperextensions','3×10–12'],['Calf raises','3×10–12'],['Incline treadmill','30 min, 3–5% at speed 3']],
