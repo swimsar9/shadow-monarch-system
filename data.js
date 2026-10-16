@@ -39,7 +39,7 @@ window.SYSTEM_DATA = {
     [23,'Dec 21','4K easy + strides','3K easy or rest','15K','Dec 26 goal · attempt only if recovered and prepared']
   ],
   gym: {
-    FullBody: [['Warmup: Stairmaster','5 min'],['Hip thrust → KAS bridges + hold','3×8–10'],['Leg press','3×8–10'],['RDLs','3×8–10'],['Assisted pull-ups','3×AMRAP'],['Rows','3×8–10'],['Bench press','3×8–10'],['Shoulder press','2×8–10'],['Core work','10 min'],['Stretch','Cool down']],
+    FullBody: [['Warmup: Row','1,000 m'],['Hamstring curls','3×8–10'],['Quad extensions','3×8–10'],['Leg press','3×8–10'],['Hyperextensions','3×10–12'],['Lat pulldown','3×8–10'],['Bicep + hammer curls','2×8–10'],['Bench press','3×8–10'],['Tricep pushdowns','3×10–12'],['Cable lateral raises','3×8 per side'],['Core work','10 min'],['Incline treadmill','30 min, 3–5% at speed 3']],
     Monday: [['Warmup: Stairmaster','5 min'],['Hip thrust → KAS bridges + hold','3×8–10'],['B-stance RDL','3×8–10 per side'],['Bulgarian split squat','2×10–12 per side'],['Calf extensions','3×10–12'],['Kickbacks / side kickbacks','2+2×12 per side'],['Incline treadmill','30 min, 5% at speed 3'],['Stretch and optional sauna','Cool down']],
     Tuesday: [['Warmup: Row','1,000 m'],['Assisted pull-ups','3×AMRAP'],['Lat pulldown','3×8–10'],['Rows','3×8–10'],['Face pulls','3×10–12'],['Rear-delt fly','2×8–10 per side'],['Bicep + hammer curls','2×8–10'],['Back extensions','3×8–10'],['Core work','10 min'],['Tuesday quality run','Can replace post-lift cardio']],
     Wednesday: [['Warmup: Stairmaster','5 min'],['Hamstring curls','3×8–10'],['Quad extensions','3×8–10'],['Leg press','3×8–10'],['RDLs','3×10–12'],['Hyperextensions','3×10–12'],['Calf raises','3×10–12'],['Incline treadmill','30 min, 3–5% at speed 3']],
