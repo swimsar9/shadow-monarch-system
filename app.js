@@ -29,6 +29,7 @@ const xpFor=(e,d)=>{
  add('Current MSK Anki',flag(e,'currentAnki')?20:0);
  add('General Anki',flag(e,'generalAnki')?20:0);
  add('SAL quiz',flag(e,'salQuiz')?25:0);
+ add('Miscellaneous tasks',Math.min(5,(Array.isArray(e.miscTasks)?e.miscTasks:[]).filter(t=>t&&t.done).length)*10);
  add('Current MSK lectures',flag(e,'lecturesComplete')||(count(e,'lecturesPlanned')>0&&count(e,'lecturesDone')>=count(e,'lecturesPlanned'))?25:0);
  add('MSK lecture practice questions',flag(e,'review')?15:0);
  add('Organize next week’s Anki decks',flag(e,'organizeAnki')?15:0);
@@ -183,6 +184,7 @@ const healthCard=e=>{
 const questsHtml=()=>{
  const e=get(selected),weekday=day(selected),schedule=scheduleFor(selected),gymDay=gymDayFor(selected),trainingNote=trainingOverride(selected);
  const academicPlan=academicsFor(selected,e);
+ const miscTasks=Array.isArray(e.miscTasks)?e.miscTasks:[];
  const gymScheduled=!!gymDay&&Object.prototype.hasOwnProperty.call(DATA.gym||{},gymDay);
  const runPlan=plannedRun(selected),bjjScheduled=weekday==='Sunday',quizScheduled=weekday==='Friday';
  const liftItems=(e.liftItems&&typeof e.liftItems==='object')?e.liftItems:{};
@@ -248,6 +250,7 @@ const questsHtml=()=>{
  (gymCard||runningCard||recoveryCard?
  '<div class="quest-day-specific">'+gymCard+runningCard+recoveryCard+'</div>':
  '<div class="note"><strong>Recovery-focused day.</strong> No gym, run, or BJJ is scheduled. Your daily quests and recovery still count.</div>')+
+ '<section class="card"><div class="today-top"><div><span class="kicker">🗂️ FLEXIBLE QUESTS</span><h2>Misc / Other Tasks</h2></div><span class="tag">'+miscTasks.filter(t=>t&&t.done).length+' / '+miscTasks.length+' completed</span></div><p class="hint" style="margin:8px 0 13px">Applications, errands, appointments, life admin, or anything else. +10 XP per completed task (up to 50 XP daily).</p><div class="quest-list">'+miscTasks.map((t,i)=>'<div class="quest '+(t.done?'done':'')+'"><label><input type="checkbox" data-misc-check="'+i+'" '+(t.done?'checked':'')+'><span><strong>'+escape(t.text)+'</strong></span></label><button type="button" class="button small outline" data-action="misc-remove" data-misc-index="'+i+'">Remove</button></div>').join('')+'</div><div class="fields" style="margin-top:12px"><label class="field"><span>Add a task</span><input id="misc-task-input" type="text" maxlength="160" placeholder="e.g. Submit application, book appointment"></label><button type="button" class="button small outline" data-action="misc-add">Add task</button></div></section>'+
  healthCard(e)+
  '<section class="card"><h2>⚔️ Daily training & movement</h2><div class="quest-list">'+check('Mobility','mobility',10,'10–15 min')+(gymScheduled?check('New strength PR','pr',10,'Only if you set a PR during today’s lift'):'')+'</div></section>'+
  '<div class="grid two"><section class="card"><h2>🥊 OPM Challenge</h2><p class="hint">100 pushups · 100 sit-ups · 100 burpees. Count sets across the day. Modify or rest when needed.</p><div class="fields three" style="margin-top:14px">'+field('Pushups','pushups','0–100+')+field('Sit-ups','situps','0–100+')+field('Burpees','burpees','0–100+')+'</div><div class="divider"></div>'+field('Steps','steps','10,000 goal')+'</section>'+
@@ -299,6 +302,8 @@ document.addEventListener('click',e=>{
   }catch(err){alert('Health import failed: '+err.message)}
   break;
  }
+ case 'misc-add':{const input=document.getElementById('misc-task-input'),value=(input?.value||'').trim();if(!value)break;const entry={...get(selected)};entry.miscTasks=[...(Array.isArray(entry.miscTasks)?entry.miscTasks:[]),{text:value.slice(0,160),done:false}];state.entries[selected]=entry;save();render();notify('Misc task added');break}
+ case 'misc-remove':{const index=Number(b.dataset.miscIndex),entry={...get(selected)};entry.miscTasks=[...(Array.isArray(entry.miscTasks)?entry.miscTasks:[])];if(Number.isInteger(index)&&index>=0&&index<entry.miscTasks.length){entry.miscTasks.splice(index,1);state.entries[selected]=entry;save();render()}break}
  case 'academic-plan':showAcademicEditor=!showAcademicEditor;render();break;
  case 'academic-reset':{const entry={...get(selected)};delete entry.academicPlan;state.entries[selected]=entry;save();render();notify('Academic plan reset to weekly defaults');break}
  case 'exam-boss':showExamBosses=!showExamBosses;render();break;
@@ -321,6 +326,8 @@ document.addEventListener('change',e=>{
  if(e.target.id==='quest-date'){if(e.target.value&&e.target.value>=START){selected=e.target.value;showExamBosses=false;showAcademicEditor=false;render()}return}
  if(e.target.id==='rank-select'){state.rank=e.target.value;save();render();return}
  const key=e.target.dataset.target;if(key){state.targets[key]=n(e.target.value);save();render();return}
+ const miscCheck=e.target.dataset.miscCheck;
+ if(miscCheck!==undefined){const index=Number(miscCheck),entry={...get(selected)};entry.miscTasks=[...(Array.isArray(entry.miscTasks)?entry.miscTasks:[])];if(Number.isInteger(index)&&index>=0&&index<entry.miscTasks.length){entry.miscTasks[index]={...entry.miscTasks[index],done:e.target.checked};state.entries[selected]=entry;save();render()}return}
  const academicKey=e.target.dataset.academicPlan;
  if(academicKey!==undefined){const valid=['oldAnki','lectures','currentAnki','generalAnki','salQuiz','practice','organize','lab'];if(valid.includes(academicKey)){const entry={...get(selected)};entry.academicPlan={...academicsFor(selected,entry),[academicKey]:e.target.checked};state.entries[selected]=entry;save();render();}return}
  const lift=e.target.dataset.liftItem;
