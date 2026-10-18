@@ -27,6 +27,8 @@ const xpFor=(e,d)=>{
  const weekday=day(d);
  add('Old Module 1 Anki',flag(e,'anki')?20:0);
  add('Current MSK Anki',flag(e,'currentAnki')?20:0);
+ add('General Anki',flag(e,'generalAnki')?20:0);
+ add('SAL quiz',flag(e,'salQuiz')?25:0);
  add('Current MSK lectures',flag(e,'lecturesComplete')||(count(e,'lecturesPlanned')>0&&count(e,'lecturesDone')>=count(e,'lecturesPlanned'))?25:0);
  add('MSK lecture practice questions',flag(e,'review')?15:0);
  add('Organize next week’s Anki decks',flag(e,'organizeAnki')?15:0);
@@ -143,7 +145,7 @@ const upcomingBossBoard=()=>{
 /* Academic module defaults are suggestions; each day's visibility may be overridden without deleting earned XP. */
 const defaultAcademics=d=>{
  const weekday=day(d),core=['Monday','Tuesday','Wednesday'].includes(weekday);
- return {oldAnki:true,lectures:core,currentAnki:core,practice:core,organize:weekday==='Friday',lab:weekday==='Tuesday'};
+ return {oldAnki:true,lectures:core,currentAnki:core,generalAnki:false,salQuiz:false,practice:core,organize:weekday==='Friday',lab:weekday==='Tuesday'};
 };
 const academicsFor=(d,e)=>({...defaultAcademics(d),...((e.academicPlan&&typeof e.academicPlan==='object')?e.academicPlan:{})});
 let showAcademicEditor=false;
@@ -223,6 +225,8 @@ const questsHtml=()=>{
   ['lab','Anatomy lab'],
   ['lectures','Current MSK lectures'],
   ['currentAnki','Current MSK Anki'],
+  ['generalAnki','General Anki'],
+  ['salQuiz','SAL quiz · Structured Active Learning'],
   ['practice','MSK lecture practice questions'],
   ['organize','Organize next week’s Anki decks']
  ].map(([key,label])=>'<label class="academic-plan-option"><input type="checkbox" data-academic-plan="'+key+'" '+(academicPlan[key]?'checked':'')+'><span>'+escape(label)+'</span></label>').join('')+'</div><button type="button" class="button small outline" data-action="academic-reset">Reset to weekly defaults</button></div>':'')+
@@ -231,6 +235,8 @@ const questsHtml=()=>{
  (academicPlan.lab?check('Complete anatomy lab','anatomyLab',40,'Hands-on dissection and structure identification'):'')+
  (academicPlan.lectures?check('Complete current MSK lectures','lecturesComplete',25,'Finish the planned lecture content for today'):'')+
  (academicPlan.currentAnki?check('Current Anki · Module 2 MSK','currentAnki',20,'Complete cards for today’s MSK lectures'):'')+
+ (academicPlan.generalAnki?check('General Anki','generalAnki',20,'Complete your general Anki review'):'')+
+ (academicPlan.salQuiz?check('SAL quiz · Structured Active Learning','salQuiz',25,'Complete a Structured Active Learning quiz'):'')+
  (academicPlan.practice?check('MSK lecture practice questions','review',15,'Practice for current lectures — no question count required'):'')+
  (academicPlan.organize?check('Organize next week’s Anki decks','organizeAnki',15,'Prepare your next week’s cards and deck organization'):'')+
  (quizScheduled?check('Pass Friday quiz','quiz',50,'Only appears on Friday'):'')+
@@ -316,7 +322,7 @@ document.addEventListener('change',e=>{
  if(e.target.id==='rank-select'){state.rank=e.target.value;save();render();return}
  const key=e.target.dataset.target;if(key){state.targets[key]=n(e.target.value);save();render();return}
  const academicKey=e.target.dataset.academicPlan;
- if(academicKey!==undefined){const valid=['oldAnki','lectures','currentAnki','practice','organize','lab'];if(valid.includes(academicKey)){const entry={...get(selected)};entry.academicPlan={...academicsFor(selected,entry),[academicKey]:e.target.checked};state.entries[selected]=entry;save();render();}return}
+ if(academicKey!==undefined){const valid=['oldAnki','lectures','currentAnki','generalAnki','salQuiz','practice','organize','lab'];if(valid.includes(academicKey)){const entry={...get(selected)};entry.academicPlan={...academicsFor(selected,entry),[academicKey]:e.target.checked};state.entries[selected]=entry;save();render();}return}
  const lift=e.target.dataset.liftItem;
  if(lift!==undefined){const entry={...get(selected)},items={...(entry.liftItems||{})};items[lift]=e.target.checked;entry.liftItems=items;state.entries[selected]=entry;save();render();return}
  const k=e.target.dataset.field;
