@@ -29,7 +29,7 @@ const xpFor=(e,d)=>{
  add('Current MSK Anki',flag(e,'currentAnki')?20:0);
  add('General Anki',flag(e,'generalAnki')?20:0);
  add('SAL quiz',flag(e,'salQuiz')?25:0);
- add('Miscellaneous tasks',Math.min(5,(Array.isArray(e.miscTasks)?e.miscTasks:[]).filter(t=>t&&t.done).length)*10);
+ add('Custom academic quests',Math.min(10,(Array.isArray(e.academicTasks)?e.academicTasks:[]).filter(t=>t&&t.done).length)*20);
  add('Current MSK lectures',flag(e,'lecturesComplete')||(count(e,'lecturesPlanned')>0&&count(e,'lecturesDone')>=count(e,'lecturesPlanned'))?25:0);
  add('MSK lecture practice questions',flag(e,'review')?15:0);
  add('Organize next week’s Anki decks',flag(e,'organizeAnki')?15:0);
@@ -146,7 +146,7 @@ const upcomingBossBoard=()=>{
 /* Academic module defaults are suggestions; each day's visibility may be overridden without deleting earned XP. */
 const defaultAcademics=d=>{
  const weekday=day(d),core=['Monday','Tuesday','Wednesday'].includes(weekday);
- return {oldAnki:true,lectures:core,currentAnki:core,generalAnki:false,salQuiz:false,practice:core,organize:weekday==='Friday',lab:weekday==='Tuesday'};
+ return {lab:weekday==='Tuesday'};
 };
 const academicsFor=(d,e)=>({...defaultAcademics(d),...((e.academicPlan&&typeof e.academicPlan==='object')?e.academicPlan:{})});
 let showAcademicEditor=false;
@@ -184,7 +184,7 @@ const healthCard=e=>{
 const questsHtml=()=>{
  const e=get(selected),weekday=day(selected),schedule=scheduleFor(selected),gymDay=gymDayFor(selected),trainingNote=trainingOverride(selected);
  const academicPlan=academicsFor(selected,e);
- const miscTasks=Array.isArray(e.miscTasks)?e.miscTasks:[];
+ const academicTasks=Array.isArray(e.academicTasks)?e.academicTasks:[];
  const gymScheduled=!!gymDay&&Object.prototype.hasOwnProperty.call(DATA.gym||{},gymDay);
  const runPlan=plannedRun(selected),bjjScheduled=weekday==='Sunday',quizScheduled=weekday==='Friday';
  const liftItems=(e.liftItems&&typeof e.liftItems==='object')?e.liftItems:{};
@@ -221,32 +221,15 @@ const questsHtml=()=>{
  const earned=xpFor(e,selected);
  return '<div class="stack">'+(window.HUNTER_STATS?window.HUNTER_STATS.daily(e):'')+
  '<section class="card"><div class="today-top"><div><span class="kicker">Daily Gate / Week '+currentWeek(selected)+'</span><h2>'+escape(pretty(selected))+' · '+weekday+'</h2><p class="muted">'+escape(schedule)+'</p></div><div class="date-nav">'+button('← Previous','prev','small outline')+'<input class="input" aria-label="Quest date" id="quest-date" type="date" min="'+START+'" value="'+selected+'">'+button('Next →','next','small outline')+'</div></div><div class="divider"></div><div class="grid two">'+stat('XP earned today',earned.xp+' XP',earned.lines.length+' quest awards','gold')+stat('OPM Challenge reps',format(count(e,'pushups')+count(e,'situps')+count(e,'burpees'))+'/300','Full protocol only when recovery allows','purple')+'</div></section>'+
- '<section class="card"><div class="today-top"><div><span class="kicker">MODULE 2 · MUSCULOSKELETAL (MSK)</span><h2>🧠 Academic Daily Quests</h2><p class="hint">Old Anki = Module 1. Current material = Module 2 (MSK).</p></div><button type="button" class="button small outline" data-action="academic-plan">'+(showAcademicEditor?'Close planner':'Customize this day')+'</button></div>'+
- (showAcademicEditor?'<div class="academic-plan-editor"><p class="hint">Choose which academic quests belong on '+escape(pretty(selected))+'. These are planning switches, not completion checkboxes. Your choices save to this browser.</p><div class="academic-plan-options">'+[
-  ['oldAnki','Old Module 1 Anki'],
-  ['lab','Anatomy lab'],
-  ['lectures','Current MSK lectures'],
-  ['currentAnki','Current MSK Anki'],
-  ['generalAnki','General Anki'],
-  ['salQuiz','SAL quiz · Structured Active Learning'],
-  ['practice','MSK lecture practice questions'],
-  ['organize','Organize next week’s Anki decks']
- ].map(([key,label])=>'<label class="academic-plan-option"><input type="checkbox" data-academic-plan="'+key+'" '+(academicPlan[key]?'checked':'')+'><span>'+escape(label)+'</span></label>').join('')+'</div><button type="button" class="button small outline" data-action="academic-reset">Reset to weekly defaults</button></div>':'')+
+ '<section class="card"><div class="today-top"><div><span class="kicker">🧠 PERSONAL STUDY PLAN</span><h2>Academic Daily Quests</h2><p class="hint">Build a different study checklist for each day. Custom tasks earn +20 XP each (up to 200 XP daily).</p></div></div>'+
  '<div class="quest-list" style="margin-top:16px">'+
- (academicPlan.oldAnki?check('Old Anki · Module 1','anki',20,'Complete due Module 1 reviews'):'')+
+ check('SAL Quiz · Structured Active Learning','salQuiz',25,'Complete your Structured Active Learning quiz')+
  (academicPlan.lab?check('Complete anatomy lab','anatomyLab',40,'Hands-on dissection and structure identification'):'')+
- (academicPlan.lectures?check('Complete current MSK lectures','lecturesComplete',25,'Finish the planned lecture content for today'):'')+
- (academicPlan.currentAnki?check('Current Anki · Module 2 MSK','currentAnki',20,'Complete cards for today’s MSK lectures'):'')+
- (academicPlan.generalAnki?check('General Anki','generalAnki',20,'Complete your general Anki review'):'')+
- (academicPlan.salQuiz?check('SAL quiz · Structured Active Learning','salQuiz',25,'Complete a Structured Active Learning quiz'):'')+
- (academicPlan.practice?check('MSK lecture practice questions','review',15,'Practice for current lectures — no question count required'):'')+
- (academicPlan.organize?check('Organize next week’s Anki decks','organizeAnki',15,'Prepare your next week’s cards and deck organization'):'')+
- (quizScheduled?check('Pass Friday quiz','quiz',50,'Only appears on Friday'):'')+
- '</div><div class="divider"></div>'+
- '<div class="fields">'+field('Study hours','studyHours','Total today',.25)+field('Anki cards completed (old + current)','ankiCards','Total today')+(academicPlan.lab?field('Anatomy lab hours','anatomyLabHours','Time in lab',.25):'')+'</div>'+
- (academicPlan.lectures?'<div class="fields" style="margin-top:12px">'+field('MSK lectures planned (optional)','lecturesPlanned')+field('MSK lectures completed (optional)','lecturesDone')+'</div><p class="hint" style="margin-top:8px">Lecture XP awards once when you check completion or reach your planned count.</p>':'')+
-  '<div class="divider"></div><div class="today-top"><div><h3>🗂️ Misc / Other Tasks</h3></div><span class="tag">'+miscTasks.filter(t=>t&&t.done).length+' / '+miscTasks.length+' completed</span></div><p class="hint" style="margin:8px 0 13px">Applications, errands, appointments, life admin, or anything else. +10 XP per completed task (up to 50 XP daily).</p><div class="quest-list">'+miscTasks.map((t,i)=>'<div class="quest '+(t.done?'done':'')+'"><label><input type="checkbox" data-misc-check="'+i+'" '+(t.done?'checked':'')+'><span><strong>'+escape(t.text)+'</strong></span></label><button type="button" class="button small outline" data-action="misc-remove" data-misc-index="'+i+'">Remove</button></div>').join('')+'</div><div class="fields" style="margin-top:12px"><label class="field"><span>Add a task</span><input id="misc-task-input" type="text" maxlength="160" placeholder="e.g. Submit application, book appointment"></label><button type="button" class="button small outline" data-action="misc-add">Add task</button></div>'+
-'<p class="hint" style="margin-top:12px">Usual rhythm: Mon–Wed full MSK routine · Thu customizable · Fri old Anki and next-week deck prep · Sat–Sun old Anki only. Turn on additional quests when you want to get ahead.</p>'+examBoss+'</section>'+
+ (quizScheduled?check('Pass Friday weekly quiz','quiz',50,'Weekly Friday quiz'):'')+
+ academicTasks.map((t,i)=>'<div class="quest '+(t.done?'done':'')+'"><label><input type="checkbox" data-academic-task-check="'+i+'" '+(t.done?'checked':'')+'><span><strong>'+escape(t.text)+'</strong><small>Custom daily quest · +20 XP</small></span></label><button type="button" class="button small outline" data-action="academic-task-remove" data-task-index="'+i+'">Remove</button></div>').join('')+
+ '</div><div class="fields" style="margin-top:14px"><label class="field"><span>Add academic task for '+escape(pretty(selected))+'</span><input id="academic-task-input" type="text" maxlength="160" placeholder="e.g. Review 2 lectures, General Anki, submit application"></label><button type="button" class="button small outline" data-action="academic-task-add">Add task</button></div>'+
+ '<div class="divider"></div><div class="fields">'+field('Study hours','studyHours','Total today',.25)+field('Anki cards completed','ankiCards','Total today')+(academicPlan.lab?field('Anatomy lab hours','anatomyLabHours','Time in lab',.25):'')+'</div>'+
+ '<p class="hint" style="margin-top:12px">Your daily checklist is saved privately in this browser. SAL Quiz stays available every day; Anatomy Lab follows Tuesday, and the weekly quiz appears Friday.</p>'+examBoss+'</section>'+
  todayBossCard+
  (gymCard||runningCard||recoveryCard?
  '<div class="quest-day-specific">'+gymCard+runningCard+recoveryCard+'</div>':
@@ -302,10 +285,8 @@ document.addEventListener('click',e=>{
   }catch(err){alert('Health import failed: '+err.message)}
   break;
  }
- case 'misc-add':{const input=document.getElementById('misc-task-input'),value=(input?.value||'').trim();if(!value)break;const entry={...get(selected)};entry.miscTasks=[...(Array.isArray(entry.miscTasks)?entry.miscTasks:[]),{text:value.slice(0,160),done:false}];state.entries[selected]=entry;save();render();notify('Misc task added');break}
- case 'misc-remove':{const index=Number(b.dataset.miscIndex),entry={...get(selected)};entry.miscTasks=[...(Array.isArray(entry.miscTasks)?entry.miscTasks:[])];if(Number.isInteger(index)&&index>=0&&index<entry.miscTasks.length){entry.miscTasks.splice(index,1);state.entries[selected]=entry;save();render()}break}
- case 'academic-plan':showAcademicEditor=!showAcademicEditor;render();break;
- case 'academic-reset':{const entry={...get(selected)};delete entry.academicPlan;state.entries[selected]=entry;save();render();notify('Academic plan reset to weekly defaults');break}
+ case 'academic-task-add':{const input=document.getElementById('academic-task-input'),value=(input?.value||'').trim();if(!value)break;const entry={...get(selected)};entry.academicTasks=[...(Array.isArray(entry.academicTasks)?entry.academicTasks:[]),{text:value.slice(0,160),done:false}];state.entries[selected]=entry;save();render();notify('Academic quest added');break}
+ case 'academic-task-remove':{const index=Number(b.dataset.taskIndex),entry={...get(selected)};entry.academicTasks=[...(Array.isArray(entry.academicTasks)?entry.academicTasks:[])];if(Number.isInteger(index)&&index>=0&&index<entry.academicTasks.length){entry.academicTasks.splice(index,1);state.entries[selected]=entry;save();render()}break}
  case 'exam-boss':showExamBosses=!showExamBosses;render();break;
  case 'quests':case 'training':setView(b.dataset.action);break;
  case 'prev':selected=dateShift(selected,-1);if(selected<START)selected=START;showExamBosses=false;showAcademicEditor=false;render();break;
@@ -326,10 +307,8 @@ document.addEventListener('change',e=>{
  if(e.target.id==='quest-date'){if(e.target.value&&e.target.value>=START){selected=e.target.value;showExamBosses=false;showAcademicEditor=false;render()}return}
  if(e.target.id==='rank-select'){state.rank=e.target.value;save();render();return}
  const key=e.target.dataset.target;if(key){state.targets[key]=n(e.target.value);save();render();return}
- const miscCheck=e.target.dataset.miscCheck;
- if(miscCheck!==undefined){const index=Number(miscCheck),entry={...get(selected)};entry.miscTasks=[...(Array.isArray(entry.miscTasks)?entry.miscTasks:[])];if(Number.isInteger(index)&&index>=0&&index<entry.miscTasks.length){entry.miscTasks[index]={...entry.miscTasks[index],done:e.target.checked};state.entries[selected]=entry;save();render()}return}
- const academicKey=e.target.dataset.academicPlan;
- if(academicKey!==undefined){const valid=['oldAnki','lectures','currentAnki','generalAnki','salQuiz','practice','organize','lab'];if(valid.includes(academicKey)){const entry={...get(selected)};entry.academicPlan={...academicsFor(selected,entry),[academicKey]:e.target.checked};state.entries[selected]=entry;save();render();}return}
+ const taskCheck=e.target.dataset.academicTaskCheck;
+ if(taskCheck!==undefined){const index=Number(taskCheck),entry={...get(selected)};entry.academicTasks=[...(Array.isArray(entry.academicTasks)?entry.academicTasks:[])];if(Number.isInteger(index)&&index>=0&&index<entry.academicTasks.length){entry.academicTasks[index]={...entry.academicTasks[index],done:e.target.checked};state.entries[selected]=entry;save();render()}return}
  const lift=e.target.dataset.liftItem;
  if(lift!==undefined){const entry={...get(selected)},items={...(entry.liftItems||{})};items[lift]=e.target.checked;entry.liftItems=items;state.entries[selected]=entry;save();render();return}
  const k=e.target.dataset.field;
