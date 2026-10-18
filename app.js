@@ -146,7 +146,7 @@ const upcomingBossBoard=()=>{
 /* Academic module defaults are suggestions; each day's visibility may be overridden without deleting earned XP. */
 const defaultAcademics=d=>{
  const weekday=day(d),core=['Monday','Tuesday','Wednesday'].includes(weekday);
- return {lab:weekday==='Tuesday'};
+ return {lab:weekday==='Tuesday',salQuiz:false};
 };
 const academicsFor=(d,e)=>({...defaultAcademics(d),...((e.academicPlan&&typeof e.academicPlan==='object')?e.academicPlan:{})});
 let showAcademicEditor=false;
@@ -223,13 +223,15 @@ const questsHtml=()=>{
  '<section class="card"><div class="today-top"><div><span class="kicker">Daily Gate / Week '+currentWeek(selected)+'</span><h2>'+escape(pretty(selected))+' · '+weekday+'</h2><p class="muted">'+escape(schedule)+'</p></div><div class="date-nav">'+button('← Previous','prev','small outline')+'<input class="input" aria-label="Quest date" id="quest-date" type="date" min="'+START+'" value="'+selected+'">'+button('Next →','next','small outline')+'</div></div><div class="divider"></div><div class="grid two">'+stat('XP earned today',earned.xp+' XP',earned.lines.length+' quest awards','gold')+stat('OPM Challenge reps',format(count(e,'pushups')+count(e,'situps')+count(e,'burpees'))+'/300','Full protocol only when recovery allows','purple')+'</div></section>'+
  '<section class="card"><div class="today-top"><div><span class="kicker">🧠 PERSONAL STUDY PLAN</span><h2>Academic Daily Quests</h2><p class="hint">Build a different study checklist for each day. Custom tasks earn +20 XP each (up to 200 XP daily).</p></div></div>'+
  '<div class="quest-list" style="margin-top:16px">'+
- check('SAL Quiz · Structured Active Learning','salQuiz',25,'Complete your Structured Active Learning quiz')+
+ (academicPlan.salQuiz?check('SAL Quiz · Structured Active Learning','salQuiz',25,'Complete your Structured Active Learning quiz'):'')+
  (academicPlan.lab?check('Complete anatomy lab','anatomyLab',40,'Hands-on dissection and structure identification'):'')+
  (quizScheduled?check('Pass Friday weekly quiz','quiz',50,'Weekly Friday quiz'):'')+
  academicTasks.map((t,i)=>'<div class="quest '+(t.done?'done':'')+'"><label><input type="checkbox" data-academic-task-check="'+i+'" '+(t.done?'checked':'')+'><span><strong>'+escape(t.text)+'</strong><small>Custom daily quest · +20 XP</small></span></label><button type="button" class="button small outline" data-action="academic-task-remove" data-task-index="'+i+'">Remove</button></div>').join('')+
- '</div><div class="fields" style="margin-top:14px"><label class="field"><span>Add academic task for '+escape(pretty(selected))+'</span><input id="academic-task-input" type="text" maxlength="160" placeholder="e.g. Review 2 lectures, General Anki, submit application"></label><button type="button" class="button small outline" data-action="academic-task-add">Add task</button></div>'+
+ '</div><div class="fields" style="margin-top:14px"><label class="field"><span>Quick-add task</span><select id="academic-task-preset"><option value="">Choose a saved task...</option><option value="Daily Anki Review">Daily Anki Review</option><option value="General Anki Review">General Anki Review</option><option value="Old Module 1 Anki">Old Module 1 Anki</option><option value="Current MSK Anki">Current MSK Anki</option><option value="Complete Lectures">Complete Lectures</option><option value="Lecture Practice Questions">Lecture Practice Questions</option><option value="Organize Anki Decks">Organize Anki Decks</option><option value="Complete SAL Quiz (Structured Active Learning)">Complete SAL Quiz (Structured Active Learning)</option><option value="Complete Application">Complete Application</option><option value="Review Notes">Review Notes</option></select></label><button type="button" class="button small outline" data-action="academic-task-preset-add">Add selected</button></div>'+
+ '<div class="fields" style="margin-top:12px"><label class="field"><span>Custom academic task for '+escape(pretty(selected))+'</span><input id="academic-task-input" type="text" maxlength="160" placeholder="e.g. Review 2 lectures, submit application"></label><button type="button" class="button small outline" data-action="academic-task-add">Add custom task</button></div>'+
+ '<div class="academic-plan-options" style="margin-top:12px"><label class="academic-plan-option"><input type="checkbox" data-academic-toggle="salQuiz" '+(academicPlan.salQuiz?'checked':'')+'><span>Show SAL Quiz today</span></label><label class="academic-plan-option"><input type="checkbox" data-academic-toggle="lab" '+(academicPlan.lab?'checked':'')+'><span>Show Anatomy Lab today</span></label></div>'+
  '<div class="divider"></div><div class="fields">'+field('Study hours','studyHours','Total today',.25)+field('Anki cards completed','ankiCards','Total today')+(academicPlan.lab?field('Anatomy lab hours','anatomyLabHours','Time in lab',.25):'')+'</div>'+
- '<p class="hint" style="margin-top:12px">Your daily checklist is saved privately in this browser. SAL Quiz stays available every day; Anatomy Lab follows Tuesday, and the weekly quiz appears Friday.</p>'+examBoss+'</section>'+
+ '<p class="hint" style="margin-top:12px">Your daily checklist is saved privately in this browser. SAL Quiz is optional each day, Anatomy Lab defaults to Tuesday, and the weekly quiz appears Friday.</p>'+examBoss+'</section>'+
  todayBossCard+
  (gymCard||runningCard||recoveryCard?
  '<div class="quest-day-specific">'+gymCard+runningCard+recoveryCard+'</div>':
@@ -285,6 +287,7 @@ document.addEventListener('click',e=>{
   }catch(err){alert('Health import failed: '+err.message)}
   break;
  }
+ case 'academic-task-preset-add':{const input=document.getElementById('academic-task-preset'),value=(input?.value||'').trim();if(!value)break;const entry={...get(selected)};entry.academicTasks=[...(Array.isArray(entry.academicTasks)?entry.academicTasks:[]),{text:value,done:false}];state.entries[selected]=entry;save();render();notify('Academic task added');break}
  case 'academic-task-add':{const input=document.getElementById('academic-task-input'),value=(input?.value||'').trim();if(!value)break;const entry={...get(selected)};entry.academicTasks=[...(Array.isArray(entry.academicTasks)?entry.academicTasks:[]),{text:value.slice(0,160),done:false}];state.entries[selected]=entry;save();render();notify('Academic quest added');break}
  case 'academic-task-remove':{const index=Number(b.dataset.taskIndex),entry={...get(selected)};entry.academicTasks=[...(Array.isArray(entry.academicTasks)?entry.academicTasks:[])];if(Number.isInteger(index)&&index>=0&&index<entry.academicTasks.length){entry.academicTasks.splice(index,1);state.entries[selected]=entry;save();render()}break}
  case 'exam-boss':showExamBosses=!showExamBosses;render();break;
@@ -307,6 +310,8 @@ document.addEventListener('change',e=>{
  if(e.target.id==='quest-date'){if(e.target.value&&e.target.value>=START){selected=e.target.value;showExamBosses=false;showAcademicEditor=false;render()}return}
  if(e.target.id==='rank-select'){state.rank=e.target.value;save();render();return}
  const key=e.target.dataset.target;if(key){state.targets[key]=n(e.target.value);save();render();return}
+ const academicToggle=e.target.dataset.academicToggle;
+ if(academicToggle!==undefined){if(['salQuiz','lab'].includes(academicToggle)){const entry={...get(selected)};entry.academicPlan={...academicsFor(selected,entry),[academicToggle]:e.target.checked};state.entries[selected]=entry;save();render()}return}
  const taskCheck=e.target.dataset.academicTaskCheck;
  if(taskCheck!==undefined){const index=Number(taskCheck),entry={...get(selected)};entry.academicTasks=[...(Array.isArray(entry.academicTasks)?entry.academicTasks:[])];if(Number.isInteger(index)&&index>=0&&index<entry.academicTasks.length){entry.academicTasks[index]={...entry.academicTasks[index],done:e.target.checked};state.entries[selected]=entry;save();render()}return}
  const lift=e.target.dataset.liftItem;
