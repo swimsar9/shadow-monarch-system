@@ -23,11 +23,13 @@ window.SYSTEM_DATA = {
     '2026-10-15': {gymDay:null,run:false,label:'Recovery · No gym'},
     '2026-10-16': {gymDay:'FullBody',run:false,label:'Full Body · Makeup Session'},
     '2026-10-17': {gymDay:null,run:true,label:'Optional Long Run / Recovery'},
+    '2026-10-23': {gymDay:null,run:false,label:'White Coat prep · Rest'},
+    '2026-10-24': {gymDay:null,run:false,label:'White Coat ceremony · Rest / optional run'},
     '2026-12-10': {run:false,label:'Chest & Core / Module Exam · Skip run'}
   },
   running: [
     [13,'Oct 12','Rest — Anatomy Lab','Rest — Study week','6–8K easy or rest','Academic adjustment · no make-up runs; Saturday long run optional'],
-    [14,'Oct 19','5K incl. 3 × 4-min tempo','4K easy','9K','Controlled quality'],
+    [14,'Oct 19','5K incl. 3 × 4-min tempo','4K easy','9K optional or rest','White Coat ceremony · no makeup needed'],
     [15,'Oct 26','5K incl. 5 × 2-min intervals','5K easy','10K','Brisk, not all-out'],
     [16,'Nov 2','4K easy','4K easy','8K','Recovery week'],
     [17,'Nov 9','6K incl. 2 × 8-min tempo','5K easy','11K','Long easy effort'],
@@ -43,7 +45,7 @@ window.SYSTEM_DATA = {
     Monday: [['Warmup: Stairmaster','5 min'],['Hip thrust → KAS bridges + hold','3×8–10'],['B-stance RDL','3×8–10 per side'],['Bulgarian split squat','2×10–12 per side'],['Calf extensions','3×10–12'],['Kickbacks / side kickbacks','2+2×12 per side'],['Incline treadmill','15–30 min, 5% at speed 3'],['Stretch and optional sauna','Cool down']],
     Tuesday: [['Warmup: Row','1,000 m'],['Assisted pull-ups','3×AMRAP'],['Lat pulldown','3×8–10'],['Rows','3×8–10'],['Face pulls','3×10–12'],['Rear-delt fly','2×8–10 per side'],['Bicep + hammer curls','2×8–10'],['Back extensions','3×8–10'],['Core work','10 min'],['Stairmaster cardio','15–30 min · speed 5; optional when completing Tuesday run'],['Tuesday quality run','Can replace post-lift cardio']],
     Wednesday: [['Warmup: Stairmaster','5 min'],['Hamstring curls','3×8–10'],['Quad extensions','3×8–10'],['Leg press','3×8–10'],['RDLs','3×10–12'],['Hyperextensions','3×10–12'],['Calf raises','3×10–12'],['Incline treadmill','15–30 min, 3–5% at speed 3']],
-    Thursday: [['Warmup: Row','1,000 m'],['Bench press','3×8–10'],['Tricep pushdowns','3×10–12'],['Cable lateral raises','3×8 per side'],['Chest fly','3×8–10'],['Shoulder press','3×8–10'],['Pushups','3×AMRAP; regular strength work (OPM is weekends only)'],['Core work','10 min'],['Stairmaster cardio','15–30 min · speed 5; optional when completing Thursday run'],['Thursday easy run','Can replace post-lift cardio']],
+    Thursday: [['Warmup: Row','1,000 m'],['Bench press','3×8–10'],['Tricep pushdowns','3×10–12'],['Cable lateral raises','3×8 per side'],['Chest fly','3×8–10'],['Shoulder press','3×8–10'],['Core work','10 min'],['Stairmaster cardio','15–30 min · speed 5; optional when completing Thursday run'],['Thursday easy run','Can replace post-lift cardio']],
     Friday: [['Warmup: Stairmaster','5 min'],['Hamstring curls','3×8–10'],['Hip abduction / adduction','3/2×AMRAP'],['Hip thrust → KAS bridges + hold','3×8–10'],['RDLs','3×8–10'],['Goblet squats','3×10–12'],['Step-ups','2×10–12 per side'],['Incline treadmill','15–30 min as recovery allows; ease off before long run'],['Stretch and optional sauna','Cool down']]
   },
   ongoingRunning: [
