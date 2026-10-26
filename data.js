@@ -56,6 +56,7 @@ window.SYSTEM_DATA = {
     ['D · Recovery','4–5K relaxed','3–5K easy or rest','6–9K','Deload / maintain consistency']
   ],
   achievements: [
+    ['Voice of the People','Participated in an election on October 25, 2026','🗳️','historical'],
     ['The White Coat Ascension','Earned the white coat on October 24, 2026 — one step closer to becoming a physician','🥼','historical'],
     ['Module Conqueror','Passed the first med-school module','🏆','historical'],
     ['Problem Solver','Passed the first problem-solving exam','🧠','historical'],
