@@ -171,11 +171,11 @@ const parseHealthImport=text=>{
 };
 const healthCard=e=>{
  const value=k=>e[k]===undefined?'Not logged':Number(e[k]).toLocaleString('en-US',{maximumFractionDigits:2});
- const field=(name,k,step=1)=>'<label class="field"><span>'+name+'</span><input type="number" min="0" step="'+step+'" data-field="'+k+'" value="'+escape(e[k]??'')+'" placeholder="From Apple Health"></label>';
+ const field=(name,k,step=1)=>'<label class="field"><span>'+name+'</span><input type="number" min="0" step="'+step+'" data-field="'+k+'" value="'+escape(k==='walkingRunningMi'?(e.walkingRunningKm===undefined?'':Math.round(miles(e.walkingRunningKm)*1000)/1000):(e[k]??''))+'" placeholder="From Apple Health"></label>';
  return '<section class="card"><div class="today-top"><div><span class="kicker">⌚ PRIVATE ACTIVITY TRACKING</span><h2>Daily Health Snapshot</h2></div><button type="button" class="button small outline" data-action="toggle-health-import">'+(showHealthImporter?'Close import':'Paste Health snapshot')+'</button></div>'+
  '<p class="hint">Active calories burned are separate from calories eaten. Walking + running distance includes everyday walking; it does not count as an individual run.</p>'+
- '<div class="grid four" style="margin-top:13px">'+stat('Steps',value('steps'),'From Apple Health')+stat('Active energy',value('activeCalories')+' kcal','Burned')+stat('Exercise time',value('exerciseMinutes')+' min','Active minutes')+stat('Walk + run',e.walkingRunningKm===undefined?'Not logged':kmText(e.walkingRunningKm),'Total combined distance')+'</div>'+
- '<div class="fields three" style="margin-top:14px">'+field('Active energy burned (kcal)','activeCalories')+field('Exercise minutes','exerciseMinutes')+field('Walk + run distance (km)','walkingRunningKm',.001)+'</div>'+
+ '<div class="grid four" style="margin-top:13px">'+stat('Steps',value('steps'),'From Apple Health')+stat('Active energy',value('activeCalories')+' kcal','Burned')+stat('Exercise time',value('exerciseMinutes')+' min','Active minutes')+stat('Walk + run',e.walkingRunningKm===undefined?'Not logged':miles(e.walkingRunningKm).toFixed(2)+' mi','Total combined distance')+'</div>'+
+ '<div class="fields three" style="margin-top:14px">'+field('Active energy burned (kcal)','activeCalories')+field('Exercise minutes','exerciseMinutes')+field('Walk + run distance (miles)','walkingRunningMi',.001)+'</div>'+
  (showHealthImporter?'<div class="health-import-panel"><p class="hint">Paste a private snapshot from ChatGPT. It merges only the included Health metrics and optional confirmed academic quests; everything else stays unchanged.</p><label class="field"><span>Private Health snapshot</span><textarea id="health-import-text" rows="6" placeholder=\'{"date":"YYYY-MM-DD","steps":0,"activeCalories":0,"exerciseMinutes":0,"walkingRunningKm":0}\'></textarea></label><button type="button" class="button small" data-action="apply-health-import">Import snapshot</button></div>':'')+
  '</section>';
 };
@@ -319,7 +319,8 @@ document.addEventListener('change',e=>{
  const k=e.target.dataset.field;
  if(k){
   const entry={...get(selected)};
-  if(k==='runMi'){entry.runKm=e.target.value===''?'':Math.round(n(e.target.value)/KM_TO_MI*1000)/1000}
+  if(k==='walkingRunningMi'){entry.walkingRunningKm=e.target.value===''?'':Math.round(n(e.target.value)/KM_TO_MI*1000)/1000}
+  else if(k==='runMi'){entry.runKm=e.target.value===''?'':Math.round(n(e.target.value)/KM_TO_MI*1000)/1000}
   else entry[k]=e.target.type==='checkbox'?e.target.checked:e.target.type==='number'?(e.target.value===''?'':n(e.target.value)):e.target.value;
   state.entries[selected]=entry;save();render();
  }
