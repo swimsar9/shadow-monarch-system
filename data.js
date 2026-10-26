@@ -25,6 +25,7 @@ window.SYSTEM_DATA = {
     '2026-10-17': {gymDay:null,run:true,label:'Optional Long Run / Recovery'},
     '2026-10-23': {gymDay:null,run:false,label:'White Coat prep · Rest'},
     '2026-10-24': {gymDay:null,run:false,label:'White Coat ceremony · Rest / optional run'},
+    '2026-10-25': {gymDay:null,run:false,label:'Travel home · Recovery day'},
     '2026-12-10': {run:false,label:'Chest & Core / Module Exam · Skip run'}
   },
   running: [
@@ -55,6 +56,7 @@ window.SYSTEM_DATA = {
     ['D · Recovery','4–5K relaxed','3–5K easy or rest','6–9K','Deload / maintain consistency']
   ],
   achievements: [
+    ['The White Coat Ascension','Earned the white coat on October 24, 2026 — one step closer to becoming a physician','🥼','historical'],
     ['Module Conqueror','Passed the first med-school module','🏆','historical'],
     ['Problem Solver','Passed the first problem-solving exam','🧠','historical'],
     ['10K Veteran','Completed three 10K races','🏃','historical'],
