@@ -26,6 +26,9 @@ window.SYSTEM_DATA = {
     '2026-10-23': {gymDay:null,run:false,label:'White Coat prep · Rest'},
     '2026-10-24': {gymDay:null,run:false,label:'White Coat ceremony · Rest / optional run'},
     '2026-10-25': {gymDay:null,run:false,label:'Travel home · Recovery day'},
+    '2026-10-27': {gymDay:null,run:true,label:'Tuesday interval run · Back workout moved to Wednesday'},
+    '2026-10-28': {gymDay:'Tuesday',run:false,label:'Back & Core · Rescheduled from Tuesday'},
+    '2026-10-30': {gymDay:'FullBody',run:false,label:'Full Body · Friday session'},
     '2026-12-10': {run:false,label:'Chest & Core / Module Exam · Skip run'}
   },
   running: [
