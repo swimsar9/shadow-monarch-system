@@ -27,7 +27,7 @@ window.SYSTEM_DATA = {
     '2026-10-24': {gymDay:null,run:false,label:'White Coat ceremony · Rest / optional run'},
     '2026-10-25': {gymDay:null,run:false,label:'Travel home · Recovery day'},
     '2026-10-27': {gymDay:null,run:true,label:'Tuesday interval run · Back workout moved to Wednesday'},
-    '2026-10-28': {gymDay:'Tuesday',run:false,label:'Back & Core · Rescheduled from Tuesday'},
+    '2026-10-28': {gymDay:'UpperBody',run:false,label:'Upper Body · Back + Chest'},
     '2026-10-30': {gymDay:'FullBody',run:false,label:'Full Body · Friday session'},
     '2026-12-10': {run:false,label:'Chest & Core / Module Exam · Skip run'}
   },
@@ -45,6 +45,7 @@ window.SYSTEM_DATA = {
     [23,'Dec 21','4K easy + strides','3K easy or rest','15K','Dec 26 goal · attempt only if recovered and prepared']
   ],
   gym: {
+    UpperBody: [['Warmup: Row','1,000 m'],['Assisted pull-ups','3×AMRAP'],['Lat pulldown','3×8–10'],['Face pulls','3×10–12'],['Bicep + hammer curls','2×8–10'],['Back extensions','3×8–10'],['Bench press','3×8–10'],['Tricep pushdowns','3×10–12'],['Cable lateral raises','3×8 per side'],['Core work','10 min'],['Stairmaster cardio','15–30 min · speed 5'],['Cooldown / optional sauna','Stretch and recover']],
     FullBody: [['Warmup: Row','1,000 m'],['Hamstring curls','3×8–10'],['Quad extensions','3×8–10'],['Leg press','3×8–10'],['Calf raises','3×10–12'],['Hyperextensions','3×10–12'],['Lat pulldown','3×8–10'],['Bicep + hammer curls','2×8–10'],['Bench press','3×8–10'],['Tricep pushdowns','3×10–12'],['Cable lateral raises','3×8 per side'],['Decline sit-ups','3×10']],
     Monday: [['Warmup: Stairmaster','5 min'],['Hip thrust → KAS bridges + hold','3×8–10'],['B-stance RDL','3×8–10 per side'],['Bulgarian split squat','2×10–12 per side'],['Calf extensions','3×10–12'],['Kickbacks / side kickbacks','2+2×12 per side'],['Incline treadmill','15–30 min, 5% at speed 3'],['Stretch and optional sauna','Cool down']],
     Tuesday: [['Warmup: Row','1,000 m'],['Assisted pull-ups','3×AMRAP'],['Lat pulldown','3×8–10'],['Rows','3×8–10'],['Face pulls','3×10–12'],['Rear-delt fly','2×8–10 per side'],['Bicep + hammer curls','2×8–10'],['Back extensions','3×8–10'],['Core work','10 min'],['Stairmaster cardio','15–30 min · speed 5; optional when completing Tuesday run'],['Tuesday quality run','Can replace post-lift cardio']],
