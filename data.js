@@ -28,6 +28,7 @@ window.SYSTEM_DATA = {
     '2026-10-25': {gymDay:null,run:false,label:'Travel home · Recovery day'},
     '2026-10-27': {gymDay:null,run:true,label:'Tuesday interval run · Back workout moved to Wednesday'},
     '2026-10-28': {gymDay:'UpperBody',run:false,label:'Upper Body · Back + Chest'},
+    '2026-10-29': {gymDay:null,run:true,label:'Thursday easy run only · No chest workout'},
     '2026-10-30': {gymDay:'FullBody',run:false,label:'Full Body · Friday session'},
     '2026-12-10': {run:false,label:'Chest & Core / Module Exam · Skip run'}
   },
