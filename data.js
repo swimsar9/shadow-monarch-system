@@ -30,6 +30,7 @@ window.SYSTEM_DATA = {
     '2026-10-28': {gymDay:'UpperBody',run:false,label:'Upper Body · Back + Chest'},
     '2026-10-29': {gymDay:null,run:false,label:'Recovery · Preparing executive board speeches'},
     '2026-10-30': {gymDay:null,run:false,label:'Rest day · E-board elections + Halloween night out'},
+    '2026-10-31': {gymDay:null,run:false,label:'Recovery day · Rest after Halloween · No long run'} ,
     '2026-12-10': {run:false,label:'Chest & Core / Module Exam · Skip run'}
   },
   running: [
