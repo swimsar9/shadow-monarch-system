@@ -31,6 +31,12 @@ window.SYSTEM_DATA = {
     '2026-10-29': {gymDay:null,run:false,label:'Recovery · Preparing executive board speeches'},
     '2026-10-30': {gymDay:null,run:false,label:'Rest day · E-board elections + Halloween night out'},
     '2026-10-31': {gymDay:null,run:false,label:'Recovery day · Rest after Halloween · No long run'} ,
+    '2026-11-10': {gymDay:null,run:true,label:'Easy return · 1.5 mi run + 0.5 mi walk',runDescription:'1.5 mi easy run + 0.5 mi walk',runNotes:'Run and walk are separate distances. Keep the run conversational; no speedwork. Record only the running distance in the run-distance field.'},
+    '2026-11-11': {gymDay:null,run:false,label:'Recovery / gentle mobility · No gym'},
+    '2026-11-12': {gymDay:null,run:true,label:'Optional race-week shakeout · 1–2 mi easy',runDescription:'Optional 1–2 mi very easy shakeout',runNotes:'Only if you feel good. It is fine to skip; no hard intervals or heavy lifting.'},
+    '2026-11-13': {gymDay:null,run:false,label:'Rest · Save energy for Sunday 5K'},
+    '2026-11-14': {gymDay:null,run:false,label:'Rest · No long run before 5K race'},
+    '2026-11-15': {gymDay:null,run:true,label:'5K RACE DAY · 3.1 mi',runDescription:'5K race · 3.1 miles (5 km)',runNotes:'Run by feel; no time goal required. Walk breaks are okay. BJJ/OPM challenges are optional recovery-wise.'},
     '2026-12-10': {run:false,label:'Chest & Core / Module Exam · Skip run'}
   },
   running: [
@@ -38,10 +44,10 @@ window.SYSTEM_DATA = {
     [14,'Oct 19','5K incl. 3 × 4-min tempo','4K easy','9K optional or rest','White Coat ceremony · no makeup needed'],
     [15,'Oct 26','5K incl. 5 × 2-min intervals','5K easy','10K','Brisk, not all-out'],
     [16,'Nov 2','4K easy','4K easy','8K','Recovery week'],
-    [17,'Nov 9','6K incl. 2 × 8-min tempo','5K easy','11K','Long easy effort'],
-    [18,'Nov 16','6K incl. 4 × 3-min intervals','5K easy','12K','Respect Friday fatigue'],
-    [19,'Nov 23','4K easy + strides','4K easy','10K','Recovery week'],
-    [20,'Nov 30','6K incl. 3 × 7-min tempo','5K easy','12K','Steady endurance'],
+    [17,'Nov 9','1.5 mi easy run + 0.5 mi walk','Optional 1–2 mi easy shakeout','Rest — Sunday 5K race','Race week · ease back gradually; no make-up mileage'],
+    [18,'Nov 16','3K easy or rest','4K easy','5–6K optional','Post-race recovery · skip speedwork; return gradually'],
+    [19,'Nov 23','4K easy','4K easy','7–8K optional','Build back gently based on recovery'],
+    [20,'Nov 30','5K easy','4–5K easy','8–10K optional','Resume building only if comfortable'],
     [21,'Dec 7','4K easy or rest','Rest — Module Exam','10–12K easy','Problem-solving + module exam week · prioritize recovery'],
     [22,'Dec 14','5K easy + optional tempo','4–5K easy','13–14K','Return gradually after exam week'],
     [23,'Dec 21','4K easy + strides','3K easy or rest','15K','Dec 26 goal · attempt only if recovered and prepared']
