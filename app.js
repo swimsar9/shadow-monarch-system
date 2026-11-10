@@ -35,7 +35,7 @@ const xpFor=(e,d)=>{
  add('Organize next week’s Anki decks',flag(e,'organizeAnki')?15:0);
  add('Anatomy lab completed',flag(e,'anatomyLab')?40:0);
  add('Strength workout',flag(e,'gym')&&!!(DATA.gym||{})[gymDayFor(d)]?30:0);
- add('Run',flag(e,'run')?weekday==='Saturday'?35:['Tuesday','Thursday'].includes(weekday)?25:0:0);
+ add('Run',flag(e,'run')&&!!plannedRun(d)?weekday==='Saturday'?35:25:0);
  add('BJJ',flag(e,'bjj')&&weekday==='Sunday'?30:0);
  for(const [k,label] of [['pushups','Pushups'],['situps','Sit-ups'],['burpees','Burpees']]){let x=count(e,k);add(label,['Saturday','Sunday'].includes(weekday)?(x>=100?10:x>=50?5:0):0)}
  const steps=count(e,'steps');add('Steps',steps>=10000?15:steps>=7000?8:steps>=5000?4:0);
@@ -117,8 +117,9 @@ const distanceText=text=>String(text??'').replace(/(\d+(?:\.\d+)?)(?:\s*([–-])
  return whole+' ('+fmt(Number(one)*KM_TO_MI)+(two?'–'+fmt(Number(two)*KM_TO_MI):'')+' mi)';
 });
 const plannedRun=date=>{
- const weekday=day(date),slot={Tuesday:2,Thursday:3,Saturday:4}[weekday];
- if(trainingOverride(date)?.run===false)return null;
+ const weekday=day(date),override=trainingOverride(date),slot={Tuesday:2,Thursday:3,Saturday:4}[weekday];
+ if(override?.run===false)return null;
+ if(override?.runDescription)return{title:weekday==='Sunday'?'5K Race Day':'Race-week adjustment',description:override.runDescription,notes:override.runNotes||''};
  if(slot===undefined)return null;
  const week=currentWeek(date);
  const row=(DATA.running||[]).find(x=>Number(x[0])===week);
