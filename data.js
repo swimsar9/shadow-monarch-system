@@ -32,7 +32,7 @@ window.SYSTEM_DATA = {
     '2026-10-30': {gymDay:null,run:false,label:'Rest day · E-board elections + Halloween night out'},
     '2026-10-31': {gymDay:null,run:false,label:'Recovery day · Rest after Halloween · No long run'} ,
     '2026-11-10': {gymDay:null,run:true,label:'Easy return · 1.5 mi run + 0.5 mi walk',runDescription:'1.5 mi easy run + 0.5 mi walk',runNotes:'Run and walk are separate distances. Keep the run conversational; no speedwork. Record only the running distance in the run-distance field.'},
-    '2026-11-11': {gymDay:null,run:false,label:'Recovery / gentle mobility · No gym'},
+    '2026-11-11': {gymDay:null,run:true,label:'2.28 mi run/walk · No gym',runDescription:'2.28 mi run/walk (3.67 km)',runNotes:'Manually reported workout. Check off when complete; do not add to Apple Health totals again.'},
     '2026-11-12': {gymDay:null,run:true,label:'Optional race-week shakeout · 1–2 mi easy',runDescription:'Optional 1–2 mi very easy shakeout',runNotes:'Only if you feel good. It is fine to skip; no hard intervals or heavy lifting.'},
     '2026-11-13': {gymDay:null,run:false,label:'Rest · Save energy for Sunday 5K'},
     '2026-11-14': {gymDay:null,run:false,label:'Rest · No long run before 5K race'},
