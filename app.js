@@ -118,7 +118,8 @@ const distanceText=text=>String(text??'').replace(/(\d+(?:\.\d+)?)(?:\s*([–-])
 });
 const plannedRun=date=>{
  const weekday=day(date),override=trainingOverride(date),slot={Tuesday:2,Thursday:3,Saturday:4}[weekday];
- if(override?.run===false)return null;
+ if(override?.run===false&&!get(date).manualRun)return null;
+  if(get(date).manualRun)return{title:'Custom run / walk',description:get(date).manualRun.label||'Manual running session',notes:'Manually added to your training schedule'};
  if(override?.runDescription)return{title:weekday==='Sunday'?'5K Race Day':'Race-week adjustment',description:override.runDescription,notes:override.runNotes||''};
  if(slot===undefined)return null;
  const week=currentWeek(date);
@@ -203,7 +204,8 @@ const questsHtml=()=>{
  const runningCard=runPlan?
  '<section class="card"><div class="today-top"><div><span class="kicker">🏃 Today’s run · '+escape(runPlan.title)+'</span><h2>'+escape(runPlan.description)+'</h2></div><span class="tag">'+(weekday==='Saturday'?'+35':'+25')+' XP</span></div><p class="hint" style="margin:8px 0 13px">'+escape(runPlan.notes)+' · Warm up and cool down. Adjust for recovery as needed.</p>'+
  check('Complete '+weekday+' run','run',weekday==='Saturday'?35:25,runPlan.description)+
- '<div class="fields" style="margin-top:13px">'+field('Distance (km)','runKm','Kilometers',.01)+runMilesField+field('Run time (minutes)','runMinutes','Minutes')+'</div><p class="hint">Enter either kilometers or miles; the other unit converts automatically. Both refer to the same run.</p></section>':'';
+ '<div class="fields" style="margin-top:13px">'+field('Distance (km)','runKm','Kilometers',.01)+runMilesField+field('Run time (minutes)','runMinutes','Minutes')+'</div><p class="hint">Enter either kilometers or miles; the other unit converts automatically. Both refer to the same run.</p>'+(e.manualRun?'<button type="button" class="button small outline" data-action="remove-custom-run">Remove custom run</button>':'')+'</section>':'';
+ const customRunAdd=!runPlan?'<section class="card"><h2>🏃 Running schedule</h2><p class="hint">No run planned for this day. Add a custom run/walk to track it and earn run XP.</p><button type="button" class="button small outline" data-action="add-custom-run">+ Add run / walk</button></section>':'';
  const recoveryCard=bjjScheduled?
  '<section class="card"><h2>🥋 Sunday BJJ</h2><div class="quest-list">'+check('Complete BJJ session','bjj',30,'Grappling practice · technique and recovery first')+'</div><div class="fields" style="margin-top:13px">'+field('BJJ duration (min)','bjjMinutes','Optional')+'</div></section>':'';
  const todaysBosses=examBosses.filter(b=>b.date===selected);
@@ -234,7 +236,7 @@ const questsHtml=()=>{
  '<p class="hint" style="margin-top:12px">Your daily checklist is saved privately in this browser. SAL Quiz is optional each day, Anatomy Lab defaults to Tuesday, and the weekly quiz appears Friday.</p>'+examBoss+'</section>'+
  todayBossCard+
  (gymCard||runningCard||recoveryCard?
- '<div class="quest-day-specific">'+gymCard+runningCard+recoveryCard+'</div>':
+ '<div class="quest-day-specific">'+gymCard+runningCard+customRunAdd+recoveryCard+'</div>':
  '<div class="note"><strong>Recovery-focused day.</strong> No gym, run, or BJJ is scheduled. Your daily quests and recovery still count.</div>')+
  healthCard(e)+
  '<section class="card"><h2>⚔️ Daily training & movement</h2><div class="quest-list">'+check('Mobility','mobility',10,'10–15 min')+(gymScheduled?check('New strength PR','pr',10,'Only if you set a PR during today’s lift'):'')+'</div></section>'+
@@ -290,7 +292,9 @@ document.addEventListener('click',e=>{
  case 'academic-task-preset-add':{const input=document.getElementById('academic-task-preset'),value=(input?.value||'').trim();if(!value)break;const entry={...get(selected)};entry.academicTasks=[...(Array.isArray(entry.academicTasks)?entry.academicTasks:[]),{text:value,done:false}];state.entries[selected]=entry;save();render();notify('Academic task added');break}
  case 'academic-task-add':{const input=document.getElementById('academic-task-input'),value=(input?.value||'').trim();if(!value)break;const entry={...get(selected)};entry.academicTasks=[...(Array.isArray(entry.academicTasks)?entry.academicTasks:[]),{text:value.slice(0,160),done:false}];state.entries[selected]=entry;save();render();notify('Academic quest added');break}
  case 'academic-task-remove':{const index=Number(b.dataset.taskIndex),entry={...get(selected)};entry.academicTasks=[...(Array.isArray(entry.academicTasks)?entry.academicTasks:[])];if(Number.isInteger(index)&&index>=0&&index<entry.academicTasks.length){entry.academicTasks.splice(index,1);state.entries[selected]=entry;save();render()}break}
- case 'exam-boss':showExamBosses=!showExamBosses;render();break;
+ case 'add-custom-run':{const label=prompt('Run/walk description (e.g. 2.28 mi run/walk):');if(!label?.trim())break;const entry={...get(selected),manualRun:{label:label.trim().slice(0,120)}};state.entries[selected]=entry;save();render();notify('Run added to your schedule');break}
+  case 'remove-custom-run':{if(!confirm('Remove this custom run and its check-off?'))break;const entry={...get(selected)};delete entry.manualRun;entry.run=false;delete entry.runKm;delete entry.runMinutes;state.entries[selected]=entry;save();render();break}
+  case 'exam-boss':showExamBosses=!showExamBosses;render();break;
  case 'quests':case 'training':setView(b.dataset.action);break;
  case 'prev':selected=dateShift(selected,-1);if(selected<START)selected=START;showExamBosses=false;showAcademicEditor=false;render();break;
  case 'next':selected=dateShift(selected,1);showExamBosses=false;showAcademicEditor=false;render();break;
