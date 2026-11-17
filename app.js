@@ -20,8 +20,9 @@ const save=()=>{try{localStorage.setItem(KEY,JSON.stringify({entries:state.entri
 const notify=msg=>{const el=document.getElementById('toast');if(!el)return;el.textContent=msg;el.classList.add('show');clearTimeout(notify.timer);notify.timer=setTimeout(()=>el.classList.remove('show'),3000)};
 const flag=(e,key)=>!!e[key],count=(e,k)=>n(e[k]);
 const trainingOverride=d=>(DATA.trainingOverrides||{})[d]||null;
-const gymDayFor=d=>{const o=trainingOverride(d);return o&&Object.prototype.hasOwnProperty.call(o,'gymDay')?o.gymDay:day(d)};
-const scheduleFor=d=>trainingOverride(d)?.label||(DATA.schedule||{})[day(d)]||'';
+const FLEX_START='2026-11-16';
+const gymDayFor=d=>{if(d>=FLEX_START)return get(d).chosenGym||null;const o=trainingOverride(d);return o&&Object.prototype.hasOwnProperty.call(o,'gymDay')?o.gymDay:day(d)};
+const scheduleFor=d=>{if(d<FLEX_START)return trainingOverride(d)?.label||(DATA.schedule||{})[day(d)]||'';const e=get(d),parts=[];if(e.chosenGym)parts.push((DATA.workoutNames||{})[e.chosenGym]||e.chosenGym);if(e.manualRun)parts.push(e.manualRun.label||'Run / walk');if(e.chosenBjj)parts.push('BJJ');return parts.join(' + ')||'Choose your training / Recovery'};
 const xpFor=(e,d)=>{
  let v=0,lines=[];const add=(name,x)=>{if(x>0){v+=x;lines.push([name,x])}};
  const weekday=day(d);
@@ -36,7 +37,7 @@ const xpFor=(e,d)=>{
  add('Anatomy lab completed',flag(e,'anatomyLab')?40:0);
  add('Strength workout',flag(e,'gym')&&!!(DATA.gym||{})[gymDayFor(d)]?30:0);
  add('Run',flag(e,'run')&&!!plannedRun(d)?weekday==='Saturday'?35:25:0);
- add('BJJ',flag(e,'bjj')&&weekday==='Sunday'?30:0);
+ add('BJJ',flag(e,'bjj')&&(d<FLEX_START?weekday==='Sunday':!!e.chosenBjj)?30:0);
  for(const [k,label] of [['pushups','Pushups'],['situps','Sit-ups'],['burpees','Burpees']]){let x=count(e,k);add(label,['Saturday','Sunday'].includes(weekday)?(x>=100?10:x>=50?5:0):0)}
  const steps=count(e,'steps');add('Steps',steps>=10000?15:steps>=7000?8:steps>=5000?4:0);
  add('Mobility',flag(e,'mobility')?10:0);
@@ -118,6 +119,7 @@ const distanceText=text=>String(text??'').replace(/(\d+(?:\.\d+)?)(?:\s*([–-])
 });
 const plannedRun=date=>{
  const weekday=day(date),override=trainingOverride(date),slot={Tuesday:2,Thursday:3,Saturday:4}[weekday];
+ if(date>=FLEX_START)return get(date).manualRun?{title:'Your chosen run / walk',description:get(date).manualRun.label||'Run / walk',notes:'You chose this session'}:null;
  if(override?.run===false&&!get(date).manualRun)return null;
   if(get(date).manualRun)return{title:'Custom run / walk',description:get(date).manualRun.label||'Manual running session',notes:'Manually added to your training schedule'};
  if(override?.runDescription)return{title:weekday==='Sunday'?'5K Race Day':'Race-week adjustment',description:override.runDescription,notes:override.runNotes||''};
@@ -188,7 +190,7 @@ const questsHtml=()=>{
  const academicPlan=academicsFor(selected,e);
  const academicTasks=Array.isArray(e.academicTasks)?e.academicTasks:[];
  const gymScheduled=!!gymDay&&Object.prototype.hasOwnProperty.call(DATA.gym||{},gymDay);
- const runPlan=plannedRun(selected),bjjScheduled=weekday==='Sunday',quizScheduled=weekday==='Friday';
+ const runPlan=plannedRun(selected),bjjScheduled=selected>=FLEX_START?!!e.chosenBjj:weekday==='Sunday',quizScheduled=weekday==='Friday';
  const liftItems=(e.liftItems&&typeof e.liftItems==='object')?e.liftItems:{};
  const check=(label,k,xp,desc='')=>'<div class="quest '+(flag(e,k)?'done':'')+'"><label><input type="checkbox" data-field="'+k+'" '+(flag(e,k)?'checked':'')+'><span><strong>'+escape(label)+'</strong><small>'+escape(desc)+'</small></span></label><span class="xp-pill">+'+xp+' XP</span></div>';
  const field=(label,k,placeholder='',step=1)=>'<label class="field"><span>'+escape(label)+'</span><input type="number" min="0" step="'+step+'" data-field="'+k+'" placeholder="'+escape(placeholder)+'" value="'+(e[k]??'')+'"></label>';
@@ -197,15 +199,16 @@ const questsHtml=()=>{
  const runMilesField='<label class="field"><span>Run distance (mi)</span><input type="number" min="0" step="0.01" data-field="runMi" placeholder="Miles" value="'+milesValue+'"></label>';
  const workout=((DATA.gym||{})[gymDay]||[]).filter(([exercise])=>!(/\brun$/i).test(exercise));
  const checkedLift=workout.filter((_,i)=>!!liftItems[i]).length;
+ const workoutPicker=selected>=FLEX_START?'<section class="card"><span class="kicker">⚔️ BUILD YOUR DAY</span><h2>Choose today’s training</h2><p class="hint">Pick any strength routine and add a run or BJJ if you want. Leave everything unselected for a rest day. Your choices are saved only in this browser.</p><label class="field" style="margin-top:12px"><span>Strength workout</span><select id="chosen-gym"><option value="">Rest / No strength workout</option>'+Object.keys(DATA.gym||{}).map(k=>'<option value="'+escape(k)+'" '+(e.chosenGym===k?'selected':'')+'>'+escape((DATA.workoutNames||{})[k]||({'Monday':'Glutes','Tuesday':'Back & Core','Wednesday':'Glutes & Quads','Thursday':'Chest & Core','Friday':'Glutes & Hamstrings','UpperBody':'Upper Body','FullBody':'Full Body'}[k]||k))+'</option>').join('')+'</select></label><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px"><button type="button" class="button small outline" data-action="'+(runPlan?'remove-custom-run':'add-custom-run')+'">'+(runPlan?'Remove run / walk':'+ Add run / walk')+'</button><button type="button" class="button small outline" data-action="toggle-bjj">'+(bjjScheduled?'Remove BJJ':'+ Add BJJ')+'</button></div></section>':'';
  const gymCard=gymScheduled?
- '<section class="card"><div class="today-top"><div><span class="kicker">⚔️ Today’s strength workout'+(gymDay!==weekday?' · MOVED FROM '+gymDay.toUpperCase():'')+'</span><h2>'+escape(weekday+' · '+((DATA.schedule||{})[gymDay]||'').replace(/\s*(?:\+|·)\s*Run$/,''))+'</h2></div><span class="tag">'+checkedLift+' / '+workout.length+' checked</span></div><p class="hint" style="margin:8px 0 13px">'+(trainingNote?.optionalGym?'Optional: choose this workout OR the long run, rather than stacking both when fatigued. ':'')+'Check exercises as you go. The full workout checkbox awards +30 XP.</p>'+
- check('Complete '+weekday+' workout','gym',30,'Finished the planned strength session')+
+ '<section class="card"><div class="today-top"><div><span class="kicker">⚔️ Today’s strength workout'+(selected<FLEX_START&&gymDay!==weekday?' · MOVED FROM '+gymDay.toUpperCase():'')+'</span><h2>'+escape(selected>=FLEX_START?({'Monday':'Glutes','Tuesday':'Back & Core','Wednesday':'Glutes & Quads','Thursday':'Chest & Core','Friday':'Glutes & Hamstrings','UpperBody':'Upper Body','FullBody':'Full Body'}[gymDay]||gymDay):weekday+' · '+((DATA.schedule||{})[gymDay]||'').replace(/\s*(?:\+|·)\s*Run$/,''))+'</h2></div><span class="tag">'+checkedLift+' / '+workout.length+' checked</span></div><p class="hint" style="margin:8px 0 13px">'+(trainingNote?.optionalGym?'Optional: choose this workout OR the long run, rather than stacking both when fatigued. ':'')+'Check exercises as you go. The full workout checkbox awards +30 XP.</p>'+
+ check('Complete strength workout','gym',30,'Finished your chosen strength session')+
  '<div class="workout-checklist">'+workout.map(([exercise,reps],i)=>'<label class="workout-step '+(liftItems[i]?'completed':'')+'"><input type="checkbox" data-lift-item="'+i+'" '+(liftItems[i]?'checked':'')+'><span>'+escape(exercise)+'</span><small>'+escape(reps)+'</small></label>').join('')+'</div></section>':'';
  const runningCard=runPlan?
  '<section class="card"><div class="today-top"><div><span class="kicker">🏃 Today’s run · '+escape(runPlan.title)+'</span><h2>'+escape(runPlan.description)+'</h2></div><span class="tag">'+(weekday==='Saturday'?'+35':'+25')+' XP</span></div><p class="hint" style="margin:8px 0 13px">'+escape(runPlan.notes)+' · Warm up and cool down. Adjust for recovery as needed.</p>'+
  check('Complete '+weekday+' run','run',weekday==='Saturday'?35:25,runPlan.description)+
  '<div class="fields" style="margin-top:13px">'+field('Distance (km)','runKm','Kilometers',.01)+runMilesField+field('Run time (minutes)','runMinutes','Minutes')+'</div><p class="hint">Enter either kilometers or miles; the other unit converts automatically. Both refer to the same run.</p>'+(e.manualRun?'<button type="button" class="button small outline" data-action="remove-custom-run">Remove custom run</button>':'')+'</section>':'';
- const customRunAdd=!runPlan?'<section class="card"><h2>🏃 Running schedule</h2><p class="hint">No run planned for this day. Add a custom run/walk to track it and earn run XP.</p><button type="button" class="button small outline" data-action="add-custom-run">+ Add run / walk</button></section>':'';
+ const customRunAdd=selected>=FLEX_START?'':!runPlan?'<section class="card"><h2>🏃 Running schedule</h2><p class="hint">No run planned for this day. Add a custom run/walk to track it and earn run XP.</p><button type="button" class="button small outline" data-action="add-custom-run">+ Add run / walk</button></section>':'';
  const recoveryCard=bjjScheduled?
  '<section class="card"><h2>🥋 Sunday BJJ</h2><div class="quest-list">'+check('Complete BJJ session','bjj',30,'Grappling practice · technique and recovery first')+'</div><div class="fields" style="margin-top:13px">'+field('BJJ duration (min)','bjjMinutes','Optional')+'</div></section>':'';
  const todaysBosses=examBosses.filter(b=>b.date===selected);
@@ -235,8 +238,8 @@ const questsHtml=()=>{
  '<div class="divider"></div><div class="fields">'+field('Study hours','studyHours','Total today',.25)+field('Anki cards completed','ankiCards','Total today')+(academicPlan.lab?field('Anatomy lab hours','anatomyLabHours','Time in lab',.25):'')+'</div>'+
  '<p class="hint" style="margin-top:12px">Your daily checklist is saved privately in this browser. SAL Quiz is optional each day, Anatomy Lab defaults to Tuesday, and the weekly quiz appears Friday.</p>'+examBoss+'</section>'+
  todayBossCard+
- (gymCard||runningCard||recoveryCard?
- '<div class="quest-day-specific">'+gymCard+runningCard+customRunAdd+recoveryCard+'</div>':
+ (workoutPicker||gymCard||runningCard||customRunAdd||recoveryCard?
+ '<div class="quest-day-specific">'+workoutPicker+gymCard+runningCard+customRunAdd+recoveryCard+'</div>':
  '<div class="note"><strong>Recovery-focused day.</strong> No gym, run, or BJJ is scheduled. Your daily quests and recovery still count.</div>')+
  healthCard(e)+
  '<section class="card"><h2>⚔️ Daily training & movement</h2><div class="quest-list">'+check('Mobility','mobility',10,'10–15 min')+(gymScheduled?check('New strength PR','pr',10,'Only if you set a PR during today’s lift'):'')+'</div></section>'+
@@ -251,7 +254,7 @@ const dashboard=()=>{const t=total(),l=lvFor(t),e=get(selected),recent=dailyReco
  const thisYear=String(new Date().getFullYear());
  const seasonXP=dailyRecords().filter(x=>x.date.startsWith(thisYear)).reduce((a,b)=>a+b.xp,0);
  return '<div class="stack"><section class="hero"><div class="meta">✦ HUNTER STATUS · ' +phase+'</div><h2>'+escape(state.rank)+'-RANK HUNTER</h2><p class="subtitle">Level '+l.level+' · The road to S-Rank starts with consistency.</p><div class="hero-stats"><div class="hero-stat"><strong>'+format(t)+' XP</strong><small>TOTAL EXPERIENCE</small></div><div class="hero-stat"><strong>'+format(l.remaining)+' / '+format(l.need)+'</strong><small>LEVEL PROGRESS</small></div><div class="hero-stat"><strong>'+bossLabel+'</strong><small>'+(postGate?'NO END DATE':'ENDURANCE BOSS')+'</small></div></div>'+bar(l.remaining,l.need)+'<span class="tag">✨ Shadow Monarch Edition</span></section>'+
- '<div class="grid four">'+stat('Level',l.level,'Next level in '+format(l.need-l.remaining)+' XP')+stat('Quests logged',dailyRecords().filter(a=>a.xp>0).length,'Days with earned XP','purple')+stat('Gym sessions',sum('gym'),'Mon–Fri strength','green')+stat('Runs logged',sum('run'),'Tue · Thu · Sat','gold')+'</div>'+
+ '<div class="grid four">'+stat('Level',l.level,'Next level in '+format(l.need-l.remaining)+' XP')+stat('Quests logged',dailyRecords().filter(a=>a.xp>0).length,'Days with earned XP','purple')+stat('Gym sessions',sum('gym'),'Your chosen workouts','green')+stat('Runs logged',sum('run'),'Your chosen run days','gold')+'</div>'+
  '<div class="note"><strong>Season '+thisYear+':</strong> '+format(seasonXP)+' XP this calendar year · Your lifetime XP and all achievements carry forward forever.</div>'+
  upcomingBossBoard()+
  '<div class="grid two"><section class="card"><div class="today-top"><h2>Today’s Quest Board</h2>'+button('Open Quest Log ↗','quests','small')+'</div><div class="divider"></div><div class="metric"><span>Current date</span><strong>'+escape(pretty(selected))+'</strong></div><div class="metric"><span>Training</span><strong>'+escape(scheduleFor(selected))+'</strong></div><div class="metric"><span>Earned XP</span><strong class="good">'+xpFor(e,selected).xp+'</strong></div><p class="hint" style="margin-top:12px">Daily quests and XP are reported by you, not automatically synced with Apple Health or Google Calendar.</p></section>'+
@@ -292,6 +295,7 @@ document.addEventListener('click',e=>{
  case 'academic-task-preset-add':{const input=document.getElementById('academic-task-preset'),value=(input?.value||'').trim();if(!value)break;const entry={...get(selected)};entry.academicTasks=[...(Array.isArray(entry.academicTasks)?entry.academicTasks:[]),{text:value,done:false}];state.entries[selected]=entry;save();render();notify('Academic task added');break}
  case 'academic-task-add':{const input=document.getElementById('academic-task-input'),value=(input?.value||'').trim();if(!value)break;const entry={...get(selected)};entry.academicTasks=[...(Array.isArray(entry.academicTasks)?entry.academicTasks:[]),{text:value.slice(0,160),done:false}];state.entries[selected]=entry;save();render();notify('Academic quest added');break}
  case 'academic-task-remove':{const index=Number(b.dataset.taskIndex),entry={...get(selected)};entry.academicTasks=[...(Array.isArray(entry.academicTasks)?entry.academicTasks:[])];if(Number.isInteger(index)&&index>=0&&index<entry.academicTasks.length){entry.academicTasks.splice(index,1);state.entries[selected]=entry;save();render()}break}
+ case 'toggle-bjj':{const entry={...get(selected)};entry.chosenBjj=!entry.chosenBjj;if(!entry.chosenBjj)entry.bjj=false;state.entries[selected]=entry;save();render();break}
  case 'add-custom-run':{const label=prompt('Run/walk description (e.g. 2.28 mi run/walk):');if(!label?.trim())break;const entry={...get(selected),manualRun:{label:label.trim().slice(0,120)}};state.entries[selected]=entry;save();render();notify('Run added to your schedule');break}
   case 'remove-custom-run':{if(!confirm('Remove this custom run and its check-off?'))break;const entry={...get(selected)};delete entry.manualRun;entry.run=false;delete entry.runKm;delete entry.runMinutes;state.entries[selected]=entry;save();render();break}
   case 'exam-boss':showExamBosses=!showExamBosses;render();break;
@@ -312,6 +316,7 @@ document.addEventListener('change',e=>{
  if(e.target.id==='stats-metric'&&window.HUNTER_STATS){window.HUNTER_STATS.change('metric',e.target.value,statsContext());render();return}
  if(e.target.id==='stats-focus'&&window.HUNTER_STATS){window.HUNTER_STATS.change('focus',e.target.value,statsContext());render();return}
  if(e.target.id==='quest-date'){if(e.target.value&&e.target.value>=START){selected=e.target.value;showExamBosses=false;showAcademicEditor=false;render()}return}
+ if(e.target.id==='chosen-gym'){const entry={...get(selected)};const chosen=e.target.value;if(chosen&&!(chosen in (DATA.gym||{})))return;entry.chosenGym=chosen||null;if(!chosen)entry.gym=false;entry.liftItems={};state.entries[selected]=entry;save();render();notify(chosen?'Workout selected':'Strength rest day selected');return}
  if(e.target.id==='rank-select'){state.rank=e.target.value;save();render();return}
  const key=e.target.dataset.target;if(key){state.targets[key]=n(e.target.value);save();render();return}
  const academicToggle=e.target.dataset.academicToggle;
